@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PARENT
+  NANNY
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum BookingType {
+  HOURLY
+  DAILY
+  WEEKLY
+  REGULAR
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  role         Role     @default(PARENT)
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  parentProfile ParentProfile?
+  nannyProfile  NannyProfile?
+
+  sentMessages     Message[] @relation("Sender")
+  receivedMessages Message[] @relation("Receiver")
+  reviewsWritten   Review[]  @relation("Author")
+}
+
+model ParentProfile {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address    String
+  city       String
+  postalCode String
+  latitude   Float?
+  longitude  Float?
+  createdAt  DateTime @default(now())
+
+  children Child[]
+  bookings Booking[]
+}
+
+model Child {
+  id           String        @id @default(cuid())
+  parentId     String
+  parent       ParentProfile @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  firstName    String
+  birthDate    DateTime
+  allergies    String?
+  specialNeeds String?
+}
+
+model NannyProfile {
+  id                 String             @id @default(cuid())
+  userId             String             @unique
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio                String
+  hourlyRate         Float
+  experienceYears    Int
+  languages          String[]
+  certifications     String[]
+  city               String
+  postalCode         String
+  latitude           Float?
+  longitude          Float?
+  verificationStatus VerificationStatus @default(PENDING)
+  isAvailable        Boolean            @default(true)
+  ratingAvg          Float              @default(0)
+  ratingCount        Int                @default(0)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  disponibilities Disponibility[]
+  bookings        Booking[]
+  reviews         Review[]
+}
+
+model Disponibility {
+  id        String       @id @default(cuid())
+  nannyId   String
+  nanny     NannyProfile @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+  dayOfWeek Int
+  startTime String
+  endTime   String
+}
+
+model Booking {
+  id                    String        @id @default(cuid())
+  parentId              String
+  parent                ParentProfile @relation(fields: [parentId], references: [id])
+  nannyId               String
+  nanny                 NannyProfile  @relation(fields: [nannyId], references: [id])
+  startDate             DateTime
+  endDate               DateTime
+  type                  BookingType
+  status                BookingStatus @default(PENDING)
+  totalPrice            Float
+  commission            Float
+  notes                 String?
+
+  // Paiement (Stripe + Cameroun)
+  paymentProvider       String?
+  paymentReference      String?       @unique
+  paymentStatus         String?       @default("PENDING")
+  paymentUrl            String?
+  paymentPhone          String?
+  paidAt                DateTime?
+
+  createdAt             DateTime      @default(now())
+
+  review Review?
+}
+
+model Review {
+  id        String       @id @default(cuid())
+  bookingId String       @unique
+  booking   Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User         @relation("Author", fields: [authorId], references: [id])
+  nannyId   String
+  nanny     NannyProfile @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String?
+  createdAt DateTime     @default(now())
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("Sender", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User     @relation("Receiver", fields: [receiverId], references: [id])
+  content    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}

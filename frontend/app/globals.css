@@ -1,0 +1,310 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-coral: 255 122 107;
+    --color-mint: 93 207 160;
+    --color-sun: 255 184 77;
+    --color-cream: 255 249 243;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-cream text-gray-800 antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+  }
+
+  ::selection {
+    @apply bg-coral-500/30 text-coral-900;
+  }
+
+  /* Scrollbar personnalisée */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-cream-100;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-coral-300 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-coral-500;
+  }
+}
+
+@layer components {
+  /* ═══════════════════════════════════════════
+     🔘 BOUTONS ANIMÉS PREMIUM
+     ═══════════════════════════════════════════ */
+
+  /* Bouton principal — Gradient corail avec shimmer */
+  .btn-primary {
+    @apply relative inline-flex items-center justify-center gap-2 
+           px-6 py-3.5 
+           bg-gradient-to-r from-coral-500 via-coral-500 to-coral-600 
+           text-white font-semibold text-sm
+           rounded-full 
+           shadow-soft-lg
+           transition-all duration-300 ease-smooth
+           hover:shadow-soft-xl hover:shadow-coral-500/40 
+           hover:-translate-y-1 hover:scale-[1.03]
+           active:scale-95 active:translate-y-0
+           focus:outline-none focus-visible:ring-4 focus-visible:ring-coral-500/30
+           overflow-hidden
+           isolate;
+  }
+
+  .btn-primary::before {
+    content: '';
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.35),
+      transparent
+    );
+    transition: transform 0.7s ease;
+  }
+
+  .btn-primary:hover::before {
+    @apply translate-x-full;
+  }
+
+  .btn-primary::after {
+    content: '';
+    @apply absolute inset-0 rounded-full opacity-0 -z-10;
+    background: radial-gradient(circle, rgba(255, 122, 107, 0.6) 0%, transparent 70%);
+    transition: opacity 0.4s ease;
+  }
+
+  .btn-primary:hover::after {
+    @apply opacity-100;
+  }
+
+  /* Bouton secondaire — Outline corail */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 
+           px-6 py-3.5 
+           bg-white text-coral-600 font-semibold text-sm
+           border-2 border-coral-500 
+           rounded-full 
+           shadow-soft
+           transition-all duration-300 ease-smooth
+           hover:bg-coral-500 hover:text-white hover:border-coral-500
+           hover:-translate-y-1 hover:shadow-soft-lg
+           active:scale-95 active:translate-y-0
+           focus:outline-none focus-visible:ring-4 focus-visible:ring-coral-500/30;
+  }
+
+  /* Bouton menthe */
+  .btn-mint {
+    @apply relative inline-flex items-center justify-center gap-2 
+           px-6 py-3.5 
+           bg-gradient-to-r from-mint-500 to-mint-600 
+           text-white font-semibold text-sm
+           rounded-full 
+           shadow-soft-lg
+           transition-all duration-300 ease-smooth
+           hover:shadow-soft-xl hover:shadow-mint-500/40
+           hover:-translate-y-1 hover:scale-[1.03]
+           active:scale-95 active:translate-y-0
+           focus:outline-none focus-visible:ring-4 focus-visible:ring-mint-500/30
+           overflow-hidden;
+  }
+
+  /* Bouton fantôme */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 
+           px-5 py-3 
+           bg-white/60 backdrop-blur-md text-gray-700 font-medium text-sm
+           border border-white/80
+           rounded-full 
+           transition-all duration-300 ease-smooth
+           hover:bg-white hover:shadow-soft hover:-translate-y-0.5;
+  }
+
+  /* Bouton outline neutre */
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 
+           px-5 py-3 
+           bg-transparent text-gray-700 font-medium text-sm
+           border-2 border-gray-200 
+           rounded-full 
+           transition-all duration-300 ease-smooth
+           hover:border-coral-500 hover:text-coral-500 
+           hover:-translate-y-0.5 hover:shadow-soft;
+  }
+
+  /* ═══════════════════════════════════════════
+     🎴 CARTES & CONTAINERS
+     ═══════════════════════════════════════════ */
+
+  .card {
+    @apply bg-white rounded-3xl shadow-soft 
+           transition-all duration-500 ease-smooth
+           hover:shadow-soft-xl hover:-translate-y-2;
+  }
+
+  .card-glass {
+    @apply bg-white/70 backdrop-blur-xl rounded-3xl 
+           border border-white/60 shadow-soft
+           transition-all duration-500 ease-smooth;
+  }
+
+  /* ═══════════════════════════════════════════
+     🏷️ BADGES & PILLS
+     ═══════════════════════════════════════════ */
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 
+           px-3 py-1.5 
+           text-xs font-semibold 
+           rounded-full
+           transition-all duration-300;
+  }
+
+  .badge-coral {
+    @apply badge bg-coral-100 text-coral-700;
+  }
+
+  .badge-mint {
+    @apply badge bg-mint-100 text-mint-700;
+  }
+
+  .badge-sun {
+    @apply badge bg-sun-100 text-sun-700;
+  }
+
+  .badge-glass {
+    @apply badge bg-white/80 backdrop-blur-md text-gray-700 shadow-soft border border-white/60;
+  }
+
+  /* ═══════════════════════════════════════════
+     ✨ INPUTS MODERNES
+     ═══════════════════════════════════════════ */
+
+  .input-modern {
+    @apply w-full px-4 py-3.5 
+           bg-white 
+           border-2 border-gray-100 
+           rounded-2xl 
+           text-sm text-gray-800
+           transition-all duration-300 ease-smooth
+           placeholder:text-gray-400
+           focus:border-coral-500 focus:ring-4 focus:ring-coral-500/10 
+           focus:outline-none
+           hover:border-gray-200;
+  }
+
+  .input-icon {
+    @apply input-modern pl-11;
+  }
+
+  /* ═══════════════════════════════════════════
+     🌈 FONDS ANIMÉS & EFFETS
+     ═══════════════════════════════════════════ */
+
+  .animated-gradient-bg {
+    background: linear-gradient(
+      -45deg,
+      #FFF9F3,
+      #FFE8E3,
+      #D9F5E7,
+      #FFF3D6,
+      #FFF9F3
+    );
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+  }
+
+  .mesh-bg {
+    @apply bg-gradient-mesh;
+  }
+
+  .blob {
+    @apply absolute rounded-full pointer-events-none;
+    filter: blur(80px);
+    opacity: 0.55;
+    will-change: transform;
+  }
+
+  /* Effet de verre */
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/60;
+  }
+
+  /* Texte gradient */
+  .text-gradient-coral {
+    @apply bg-gradient-to-r from-coral-500 via-sun-500 to-coral-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-mint {
+    @apply bg-gradient-to-r from-mint-500 via-sky-500 to-mint-600 bg-clip-text text-transparent;
+  }
+
+  /* ═══════════════════════════════════════════
+     📊 SECTIONS
+     ═══════════════════════════════════════════ */
+
+  .section-padding {
+    @apply py-20 md:py-28;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto px-6;
+  }
+}
+
+@layer utilities {
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+
+  .reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Empêche le débordement horizontal */
+  .no-overflow {
+    overflow-x: hidden;
+  }
+
+  /* Délais d'animation utilitaires */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+  .delay-700 { animation-delay: 700ms; }
+  .delay-1000 { animation-delay: 1000ms; }
+}
+
+/* Respect des préférences d'accessibilité */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

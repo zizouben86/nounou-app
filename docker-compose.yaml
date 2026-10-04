@@ -1,0 +1,67 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nounou-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nounou_user
+      POSTGRES_PASSWORD: nounou_password
+      POSTGRES_DB: nounou_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - nounou_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nounou_user -d nounou_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: nounou-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://nounou_user:nounou_password@postgres:5432/nounou_db?schema=public
+      JWT_SECRET: change_me_with_long_random_secret
+      JWT_EXPIRES_IN: 7d
+      NODE_ENV: production
+      PORT: 4000
+      FRONTEND_URL: http://localhost:3000
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_COMMISSION_RATE: 0.15
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./Backend/src:/app/src
+      - ./Backend/prisma:/app/prisma
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nounou-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+      NEXT_PUBLIC_SOCKET_URL: http://localhost:4000
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/app:/app/app
+      - ./frontend/components:/app/components
+      - ./frontend/lib:/app/lib
+
+volumes:
+  nounou_postgres_data:
