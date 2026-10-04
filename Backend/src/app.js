@@ -1,3 +1,13 @@
+app.get('/debug/env', (req, res) => {
+  res.json({
+    hasDatabaseUrl: !!process.env.DATABASE_URL,
+    hasJwtSecret: !!process.env.JWT_SECRET,
+    hasJwtExpires: !!process.env.JWT_EXPIRES_IN,
+    hasFrontendUrl: !!process.env.FRONTEND_URL,
+    nodeEnv: process.env.NODE_ENV,
+    campayMock: process.env.CAMPAY_MOCK,
+  });
+});
 require('dotenv').config();
 
 const express = require('express');
