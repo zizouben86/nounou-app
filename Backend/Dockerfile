@@ -1,16 +1,19 @@
 FROM node:20-alpine
 
+# ⚠️ INSTALLER OPENSSL (indispensable pour Prisma sur Alpine)
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
-# Dépendances
 COPY package*.json ./
 COPY prisma ./prisma/
-RUN npm ci --omit=dev
 
-# Prisma Client
+RUN npm install --production=false
+
+# Générer Prisma Client
 RUN npx prisma generate
 
-# Code source
+# Copier le code source
 COPY . .
 
 EXPOSE 4000
