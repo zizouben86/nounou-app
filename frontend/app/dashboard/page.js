@@ -518,8 +518,8 @@ export default function Dashboard() {
           </div>
         </div>
       }
-    >
-      DashboardContent
+     >
+      <DashboardContent />       ← ✅ Pour dashboard
     </Suspense>
   );
 }

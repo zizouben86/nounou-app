@@ -556,7 +556,7 @@ export default function NannyDashboard() {
         </div>
       }
     >
-      NannyDashboardContent
+      <NannyDashboardContent />  ← ✅ Pour nanny/dashboard
     </Suspense>
   );
 }
