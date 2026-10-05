@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../../lib/api';
+import { getSocket } from '../../../lib/socket';
 import Navbar from '../../../components/Navbar';
 import Reveal from '../../../components/Reveal';
 import Icon from '../../../components/Icon';
@@ -18,6 +19,7 @@ export default function NannyDashboard() {
   const [filter, setFilter] = useState(searchParams.get('filter') || 'PENDING');
   const [actionLoading, setActionLoading] = useState(null);
   const [toast, setToast] = useState(null);
+  const [cancelledIds, setCancelledIds] = useState([]);
 
   useEffect(() => {
     const urlFilter = searchParams.get('filter');
@@ -35,6 +37,48 @@ export default function NannyDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
+  // ═══════════════════════════════════════════════════════
+  //  Socket : ecouter les annulations de reservation
+  // ═══════════════════════════════════════════════════════
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleBookingCancelled = (data) => {
+      console.log('[Socket] Reservation annulee :', data);
+
+      // 1. Retirer la ligne du state
+      setBookings((prev) => prev.filter((b) => b.id !== data.bookingId));
+
+      // 2. Ajouter a la liste des annulations (pour animation)
+      setCancelledIds((prev) => [...prev, data.bookingId]);
+
+      // 3. Toast
+      setToast({
+        message: `${data.parentName} a annule la reservation`,
+        type: 'warning',
+      });
+      setTimeout(() => setToast(null), 5000);
+
+      // 4. Recharger les stats (le compteur change)
+      setTimeout(() => {
+        loadStats();
+      }, 500);
+
+      // 5. Retirer de cancelledIds apres animation
+      setTimeout(() => {
+        setCancelledIds((prev) => prev.filter((id) => id !== data.bookingId));
+      }, 3000);
+    };
+
+    socket.on('booking:cancelled', handleBookingCancelled);
+
+    return () => {
+      socket.off('booking:cancelled', handleBookingCancelled);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const loadAll = async () => {
     setLoading(true);
     try {
@@ -51,6 +95,15 @@ export default function NannyDashboard() {
       showToast('Erreur de chargement', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const { data } = await api.get('/nanny/me/stats');
+      setStats(data);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -74,6 +127,15 @@ export default function NannyDashboard() {
     try {
       await api.patch(`/nanny/me/bookings/${bookingId}/respond`, { action });
       showToast(action === 'accept' ? 'Reservation acceptee !' : 'Reservation refusee');
+
+      // Animation de retrait si refus
+      if (action === 'refuse') {
+        setCancelledIds((prev) => [...prev, bookingId]);
+        setBookings((prev) => prev.map((b) =>
+          b.id === bookingId ? { ...b, status: 'CANCELLED' } : b
+        ));
+      }
+
       await loadAll();
     } catch (err) {
       showToast(err.response?.data?.message || 'Erreur', 'error');
@@ -101,7 +163,7 @@ export default function NannyDashboard() {
   };
 
   const getStatusInfo = (b) => {
-    if (b.status === 'CANCELLED') return { label: 'Refusee', class: 'bg-gray-100 text-gray-600', icon: 'xCircle' };
+    if (b.status === 'CANCELLED') return { label: 'Annulee', class: 'bg-red-100 text-red-700', icon: 'xCircle' };
     if (b.status === 'COMPLETED') return { label: 'Terminee', class: 'bg-sky-100 text-sky-700', icon: 'checkCircle' };
     if (b.status === 'CONFIRMED') return { label: 'Confirmee', class: 'bg-mint-100 text-mint-700', icon: 'checkCircle' };
     return { label: 'En attente', class: 'bg-sun-100 text-sun-700', icon: 'clock' };
@@ -137,11 +199,18 @@ export default function NannyDashboard() {
       {toast && (
         <div
           className={`fixed top-24 right-6 z-50 px-6 py-4 rounded-2xl shadow-soft-xl animate-fade-in-down max-w-md ${
-            toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-mint-500 text-white'
+            toast.type === 'error'
+              ? 'bg-red-500 text-white'
+              : toast.type === 'warning'
+              ? 'bg-sun-500 text-white'
+              : 'bg-mint-500 text-white'
           }`}
         >
           <div className="flex items-center gap-2 font-semibold text-sm">
-            <Icon name={toast.type === 'error' ? 'xCircle' : 'checkCircle'} size={18} />
+            <Icon
+              name={toast.type === 'error' ? 'xCircle' : toast.type === 'warning' ? 'alert' : 'checkCircle'}
+              size={18}
+            />
             {toast.message}
           </div>
         </div>
@@ -248,7 +317,7 @@ export default function NannyDashboard() {
                   { id: 'PENDING', label: 'En attente', count: stats?.bookings.pending },
                   { id: 'CONFIRMED', label: 'Confirmees', count: stats?.bookings.confirmed },
                   { id: 'COMPLETED', label: 'Terminees', count: stats?.bookings.completed },
-                  { id: 'CANCELLED', label: 'Refusees', count: stats?.bookings.cancelled },
+                  { id: 'CANCELLED', label: 'Annulees', count: stats?.bookings.cancelled },
                   { id: 'ALL', label: 'Toutes', count: stats?.bookings.total },
                 ].map((f) => (
                   <button
@@ -290,11 +359,16 @@ export default function NannyDashboard() {
                     const status = getStatusInfo(b);
                     const parent = b.parent?.user;
                     const isPaid = b.paymentStatus === 'SUCCESS';
+                    const isCancelled = cancelledIds.includes(b.id);
 
                     return (
                       <li
                         key={b.id}
-                        className="border-2 border-gray-100 hover:border-coral-200 rounded-2xl p-5 transition-all duration-300 hover:shadow-soft"
+                        className={`border-2 rounded-2xl p-5 transition-all duration-500 ${
+                          isCancelled
+                            ? 'border-red-200 bg-red-50/50 opacity-60 scale-95'
+                            : 'border-gray-100 hover:border-coral-200 hover:shadow-soft'
+                        }`}
                       >
                         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
                           <div className="flex items-start gap-4 flex-1">
@@ -310,16 +384,10 @@ export default function NannyDashboard() {
                                   <Icon name={status.icon} size={10} />
                                   {status.label}
                                 </span>
-                                {isPaid && (
+                                {isPaid && b.status !== 'CANCELLED' && (
                                   <span className="badge bg-mint-500 text-white !text-[10px] flex items-center gap-1">
                                     <Icon name="wallet" size={10} />
                                     Paye
-                                  </span>
-                                )}
-                                {!isPaid && b.status === 'CONFIRMED' && (
-                                  <span className="badge bg-sun-100 text-sun-700 !text-[10px] flex items-center gap-1">
-                                    <Icon name="clock" size={10} />
-                                    Non paye
                                   </span>
                                 )}
                               </div>
@@ -329,18 +397,9 @@ export default function NannyDashboard() {
                                   <Icon name="calendar" size={14} className="text-gray-400 shrink-0" />
                                   <span>
                                     {new Date(b.startDate).toLocaleDateString('fr-FR', {
-                                      weekday: 'short',
-                                      day: 'numeric',
-                                      month: 'short',
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    })}{' '}
-                                    -{' '}
-                                    {new Date(b.endDate).toLocaleDateString('fr-FR', {
-                                      day: 'numeric',
-                                      month: 'short',
-                                      hour: '2-digit',
-                                      minute: '2-digit',
+                                      weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                                    })} - {new Date(b.endDate).toLocaleDateString('fr-FR', {
+                                      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
                                     })}
                                   </span>
                                 </div>
@@ -349,16 +408,6 @@ export default function NannyDashboard() {
                                   <div className="flex items-center gap-2">
                                     <Icon name="phone" size={14} className="text-gray-400 shrink-0" />
                                     <span>{parent.phone}</span>
-                                  </div>
-                                )}
-
-                                {b.parent?.children?.length > 0 && (
-                                  <div className="flex items-center gap-2">
-                                    <Icon name="baby" size={14} className="text-gray-400 shrink-0" />
-                                    <span>
-                                      {b.parent.children.length} enfant
-                                      {b.parent.children.length > 1 ? 's' : ''}
-                                    </span>
                                   </div>
                                 )}
 
@@ -417,6 +466,13 @@ export default function NannyDashboard() {
                                 <div className="text-xs text-gray-500 bg-sun-50 border-2 border-dashed border-sun-200 rounded-xl px-4 py-3 text-center flex items-center gap-2 justify-center">
                                   <Icon name="clock" size={14} className="text-sun-600" />
                                   En attente du paiement
+                                </div>
+                              )}
+
+                              {b.status === 'CANCELLED' && (
+                                <div className="text-xs text-red-500 bg-red-50 border-2 border-dashed border-red-200 rounded-xl px-4 py-3 text-center flex items-center gap-2 justify-center">
+                                  <Icon name="xCircle" size={14} />
+                                  Annulee par le parent
                                 </div>
                               )}
                             </div>
