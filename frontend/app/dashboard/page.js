@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../lib/api';
@@ -7,7 +7,7 @@ import Navbar from '../../components/Navbar';
 import Reveal from '../../components/Reveal';
 import Icon from '../../components/Icon';
 
-export default function Dashboard() {
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [user, setUser] = useState(null);
@@ -505,5 +505,21 @@ export default function Dashboard() {
         </div>
       )}
     </>
+  );
+}
+export default function Dashboard() {
+  return (
+    <Suspense
+      fallback={
+        <div className="pt-32 pb-16 min-h-screen bg-cream flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-4xl animate-spin text-coral-500 inline-block">...</div>
+            <p className="text-gray-500 mt-4">Chargement...</p>
+          </div>
+        </div>
+      }
+    >
+      DashboardContent
+    </Suspense>
   );
 }
