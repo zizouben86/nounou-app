@@ -1,13 +1,3 @@
-app.get('/debug/env', (req, res) => {
-  res.json({
-    hasDatabaseUrl: !!process.env.DATABASE_URL,
-    hasJwtSecret: !!process.env.JWT_SECRET,
-    hasJwtExpires: !!process.env.JWT_EXPIRES_IN,
-    hasFrontendUrl: !!process.env.FRONTEND_URL,
-    nodeEnv: process.env.NODE_ENV,
-    campayMock: process.env.CAMPAY_MOCK,
-  });
-});
 require('dotenv').config();
 
 const express = require('express');
@@ -24,28 +14,37 @@ const messageRoutes = require('./modules/messages/messages.routes');
 const campayWebhookRoutes = require('./modules/payments/campay.webhook.routes');
 const campayRoutes = require('./modules/payments/campay.routes');
 const adminRoutes = require('./modules/admin/admin.routes');
+const notificationRoutes = require('./modules/notifications/notifications.routes');
 const { errorHandler } = require('./middlewares/error.middleware');
 
+// 1. Initialiser Express AVANT tout
 const app = express();
 
+// 2. Middlewares globaux
 app.use(helmet());
 app.use(cors());
 
-// Webhook CamPay - RAW BODY
-app.use('/api/payments/campay/webhook', express.raw({ type: 'application/json' }), campayWebhookRoutes);
+// 3. Webhook CamPay - RAW BODY (avant express.json)
+app.use(
+  '/api/payments/campay/webhook',
+  express.raw({ type: 'application/json' }),
+  campayWebhookRoutes
+);
 
-// Parser JSON
+// 4. Parser JSON pour le reste
 app.use(express.json());
 
-// Rate limit
+// 5. Rate limit
 app.use('/api', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
   message: 'Trop de requetes.',
 }));
 
+// 6. Routes de base
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
+// 7. Routes de l'API
 app.use('/api/auth', authRoutes);
 app.use('/api/nannies', nannyRoutes);
 app.use('/api/nanny/me', nannyMeRoutes);
@@ -54,7 +53,9 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/payments/campay', campayRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/notifications', notificationRoutes);
 
+// 8. Gestionnaire d'erreurs (TOUJOURS EN DERNIER)
 app.use(errorHandler);
 
 module.exports = app;

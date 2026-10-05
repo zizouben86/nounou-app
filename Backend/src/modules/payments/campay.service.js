@@ -1,5 +1,6 @@
 const axios = require('axios');
 const prisma = require('../../config/prisma');
+const { notifyPaymentConfirmed } = require('../../socket');
 
 const MOCK_MODE = process.env.CAMPAY_MOCK === 'true';
 const MOCK_DELAY_MS = Number(process.env.CAMPAY_MOCK_DELAY || 3000);
@@ -38,16 +39,11 @@ const initiatePayment = async (bookingId, phoneNumber, parentUserId) => {
     where: { id: bookingId },
     include: { parent: true, nanny: true },
   });
-
   if (!booking) throw new Error('Reservation introuvable');
   if (booking.parent.userId !== parentUserId) throw new Error('Acces refuse');
-
-  // ⚠️ Verifications de statut
   if (booking.paymentStatus === 'SUCCESS') throw new Error('Cette reservation est deja payee');
   if (booking.status === 'CANCELLED') throw new Error('Cette reservation a ete annulee');
   if (booking.status === 'COMPLETED') throw new Error('Cette reservation est terminee');
-
-  // ⚠️ Le paiement n'est possible QUE si la nounou a accepte
   if (booking.status !== 'CONFIRMED') {
     throw new Error('Le paiement sera disponible des que la nounou aura accepte votre reservation');
   }
@@ -70,8 +66,6 @@ const initiatePayment = async (bookingId, phoneNumber, parentUserId) => {
 
   const authHeader = getAuthHeader();
   const url = CAMPAY_BASE_URL + '/collect/';
-  console.log('POST', url);
-
   const payload = {
     amount: amount.toString(),
     currency: 'XAF',
@@ -80,31 +74,27 @@ const initiatePayment = async (bookingId, phoneNumber, parentUserId) => {
     external_reference: bookingId,
   };
 
-  try {
-    const response = await axios.post(url, payload, {
-      headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
-      timeout: 30000,
-    });
+  const response = await axios.post(url, payload, {
+    headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
+    timeout: 30000,
+  });
 
-    await prisma.booking.update({
-      where: { id: bookingId },
-      data: {
-        paymentProvider: 'CAMPAY',
-        paymentReference: response.data.reference,
-        paymentStatus: 'PENDING',
-        paymentPhone: phoneNumber,
-      },
-    });
+  await prisma.booking.update({
+    where: { id: bookingId },
+    data: {
+      paymentProvider: 'CAMPAY',
+      paymentReference: response.data.reference,
+      paymentStatus: 'PENDING',
+      paymentPhone: phoneNumber,
+    },
+  });
 
-    return {
-      reference: response.data.reference,
-      ussdCode: response.data.ussd_code || response.data.ussd,
-      operator: response.data.operator || detectOperator(phoneNumber),
-      status: 'PENDING',
-    };
-  } catch (err) {
-    throw new Error((err.response && err.response.data && err.response.data.message) || err.message);
-  }
+  return {
+    reference: response.data.reference,
+    ussdCode: response.data.ussd_code || response.data.ussd,
+    operator: response.data.operator || detectOperator(phoneNumber),
+    status: 'PENDING',
+  };
 };
 
 const mockCheckStatus = async (reference) => {
@@ -126,15 +116,11 @@ const checkPaymentStatus = async (bookingId) => {
   } else {
     const authHeader = getAuthHeader();
     const url = CAMPAY_BASE_URL + '/transaction/' + booking.paymentReference + '/';
-    try {
-      const response = await axios.get(url, {
-        headers: { Authorization: authHeader },
-        timeout: 15000,
-      });
-      status = response.data.status;
-    } catch (err) {
-      throw new Error((err.response && err.response.data && err.response.data.message) || err.message);
-    }
+    const response = await axios.get(url, {
+      headers: { Authorization: authHeader },
+      timeout: 15000,
+    });
+    status = response.data.status;
   }
 
   if (status === 'SUCCESSFUL' && booking.paymentStatus !== 'SUCCESS') {
@@ -142,7 +128,9 @@ const checkPaymentStatus = async (bookingId) => {
       where: { id: bookingId },
       data: { paymentStatus: 'SUCCESS', paidAt: new Date() },
     });
-    console.log('Booking ' + bookingId + ' marque comme paye');
+
+    // ⚡ Notification temps reel
+    notifyPaymentConfirmed(bookingId).catch(err => console.error('[Notify]', err));
   } else if (status === 'FAILED') {
     await prisma.booking.update({
       where: { id: bookingId },

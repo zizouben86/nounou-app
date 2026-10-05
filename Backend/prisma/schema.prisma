@@ -49,9 +49,10 @@ model User {
   parentProfile ParentProfile?
   nannyProfile  NannyProfile?
 
-  sentMessages     Message[] @relation("Sender")
-  receivedMessages Message[] @relation("Receiver")
-  reviewsWritten   Review[]  @relation("Author")
+  sentMessages     Message[]      @relation("Sender")
+  receivedMessages Message[]      @relation("Receiver")
+  reviewsWritten   Review[]       @relation("Author")
+  notifications    Notification[]
 }
 
 model ParentProfile {
@@ -114,28 +115,28 @@ model Disponibility {
 }
 
 model Booking {
-  id                    String        @id @default(cuid())
-  parentId              String
-  parent                ParentProfile @relation(fields: [parentId], references: [id])
-  nannyId               String
-  nanny                 NannyProfile  @relation(fields: [nannyId], references: [id])
-  startDate             DateTime
-  endDate               DateTime
-  type                  BookingType
-  status                BookingStatus @default(PENDING)
-  totalPrice            Float
-  commission            Float
-  notes                 String?
+  id         String        @id @default(cuid())
+  parentId   String
+  parent     ParentProfile @relation(fields: [parentId], references: [id])
+  nannyId    String
+  nanny      NannyProfile  @relation(fields: [nannyId], references: [id])
+  startDate  DateTime
+  endDate    DateTime
+  type       BookingType
+  status     BookingStatus @default(PENDING)
+  totalPrice Float
+  commission Float
+  notes      String?
 
   // Paiement (Stripe + Cameroun)
-  paymentProvider       String?
-  paymentReference      String?       @unique
-  paymentStatus         String?       @default("PENDING")
-  paymentUrl            String?
-  paymentPhone          String?
-  paidAt                DateTime?
+  paymentProvider  String?
+  paymentReference String?   @unique
+  paymentStatus    String?   @default("PENDING")
+  paymentUrl       String?
+  paymentPhone     String?
+  paidAt           DateTime?
 
-  createdAt             DateTime      @default(now())
+  createdAt DateTime @default(now())
 
   review Review?
 }
@@ -162,4 +163,19 @@ model Message {
   content    String
   isRead     Boolean  @default(false)
   createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  message   String
+  link      String?
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
 }

@@ -1,20 +1,16 @@
 const prisma = require('../../config/prisma');
+const { notifyNewBooking } = require('../../socket');
 
-const COMMISSION_RATE = 0.15; // 15% de commission agence
+const COMMISSION_RATE = 0.15;
 
 const create = async (parentUserId, data) => {
-  const parent = await prisma.parentProfile.findUnique({
-    where: { userId: parentUserId },
-  });
+  const parent = await prisma.parentProfile.findUnique({ where: { userId: parentUserId } });
   if (!parent) {
     const err = new Error('Profil parent introuvable');
     err.status = 404;
     throw err;
   }
-
-  const nanny = await prisma.nannyProfile.findUnique({
-    where: { id: data.nannyId },
-  });
+  const nanny = await prisma.nannyProfile.findUnique({ where: { id: data.nannyId } });
   if (!nanny) {
     const err = new Error('Nounou introuvable');
     err.status = 404;
@@ -27,7 +23,7 @@ const create = async (parentUserId, data) => {
   const totalPrice = +(hours * nanny.hourlyRate).toFixed(2);
   const commission = +(totalPrice * COMMISSION_RATE).toFixed(2);
 
-  return prisma.booking.create({
+  const booking = await prisma.booking.create({
     data: {
       parentId: parent.id,
       nannyId: nanny.id,
@@ -39,11 +35,17 @@ const create = async (parentUserId, data) => {
       commission,
     },
   });
+
+  // ⚡ Notification temps reel a la nounou
+  notifyNewBooking(booking.id).catch(err => console.error('[Notify]', err));
+
+  return booking;
 };
 
 const listMine = async (userId, role) => {
   if (role === 'PARENT') {
     const parent = await prisma.parentProfile.findUnique({ where: { userId } });
+    if (!parent) return [];
     return prisma.booking.findMany({
       where: { parentId: parent.id },
       include: { nanny: { include: { user: true } } },
@@ -52,6 +54,7 @@ const listMine = async (userId, role) => {
   }
   if (role === 'NANNY') {
     const nanny = await prisma.nannyProfile.findUnique({ where: { userId } });
+    if (!nanny) return [];
     return prisma.booking.findMany({
       where: { nannyId: nanny.id },
       include: { parent: { include: { user: true } } },
@@ -67,26 +70,20 @@ const updateStatus = async (bookingId, userId, role, status) => {
     include: { nanny: true, parent: true },
   });
   if (!booking) {
-    const err = new Error('Réservation introuvable');
+    const err = new Error('Reservation introuvable');
     err.status = 404;
     throw err;
   }
-
-  // Vérification des droits
   const isOwner =
     (role === 'PARENT' && booking.parent.userId === userId) ||
     (role === 'NANNY' && booking.nanny.userId === userId) ||
     role === 'ADMIN';
   if (!isOwner) {
-    const err = new Error('Accès refusé');
+    const err = new Error('Acces refuse');
     err.status = 403;
     throw err;
   }
-
-  return prisma.booking.update({
-    where: { id: bookingId },
-    data: { status },
-  });
+  return prisma.booking.update({ where: { id: bookingId }, data: { status } });
 };
 
 module.exports = { create, listMine, updateStatus };
