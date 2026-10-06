@@ -10,6 +10,7 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
+    "@getbrevo/brevo": "^6.0.3",
     "@lino_sap/campay-plugin": "^1.0.0",
     "@prisma/client": "^5.22.0",
     "axios": "^1.20.0",
