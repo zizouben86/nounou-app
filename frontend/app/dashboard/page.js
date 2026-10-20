@@ -188,7 +188,14 @@ function DashboardContent() {
                   <Icon name="plus" size={16} />
                   Nouvelle reservation
                 </Link>
-                <button onClick={logout} className="btn-outline !py-2 !px-4 !text-sm flex items-center gap-2">
+                <Link
+                href="/profile"
+                className="btn-outline !py-2 !px-4 !text-sm"
+              >
+                👤 Mon profil
+              </Link>
+              <button
+                onClick={logout} className="btn-outline !py-2 !px-4 !text-sm flex items-center gap-2">
                   <Icon name="logout" size={16} />
                   Deconnexion
                 </button>
@@ -519,7 +526,7 @@ export default function Dashboard() {
         </div>
       }
      >
-      <DashboardContent />       ← ✅ Pour dashboard
+      <DashboardContent />       â† âœ… Pour dashboard
     </Suspense>
   );
 }

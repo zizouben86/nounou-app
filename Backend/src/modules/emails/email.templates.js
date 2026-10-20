@@ -38,9 +38,9 @@ const welcomeNanny = ({ firstName }) => ({
   html: baseTemplate('Bienvenue Nounou', `
     <h2 style="color:#F05A48;margin-top:0;">Bonjour ${firstName} !</h2>
     <p>Merci de rejoindre <strong>NounouHome</strong> ! Completez votre profil pour etre visible.</p>
-    <div style="text-align:center;"><a href="${process.env.FRONTEND_URL}/dashboard" style="${btn}">Completer mon profil</a></div>
+    <div style="text-align:center;"><a href="${process.env.FRONTEND_URL}/nanny/profile" style="${btn}">Completer mon profil</a></div>
   `),
-  text: 'Bienvenue ' + firstName + ' ! Completez votre profil: ' + process.env.FRONTEND_URL + '/dashboard',
+  text: 'Bienvenue ' + firstName + ' ! Completez votre profil: ' + process.env.FRONTEND_URL + '/nanny/profile',
 });
 
 const bookingConfirmationParent = ({ firstName, nannyName, startDate, endDate, totalPrice, bookingId }) => ({
@@ -70,7 +70,7 @@ const bookingNotificationNanny = ({ nannyFirstName, parentName, startDate, endDa
       <p><strong>Au :</strong> ${new Date(endDate).toLocaleDateString('fr-FR')}</p>
       <p style="font-size:18px;"><strong>Vous recevrez :</strong> <span style="color:#5DCFA0;">${(totalPrice * 0.85).toFixed(2)} XAF</span></p>
     </div>
-    <div style="text-align:center;"><a href="${process.env.FRONTEND_URL}/dashboard" style="${btn}">Voir la demande</a></div>
+    <div style="text-align:center;"><a href="${process.env.FRONTEND_URL}/nanny/dashboard" style="${btn}">Voir la demande</a></div>
   `),
   text: 'Nouvelle reservation de ' + parentName + '.',
 });
@@ -89,10 +89,27 @@ const paymentReceived = ({ firstName, amount, bookingId, nannyName }) => ({
   text: 'Paiement de ' + amount + ' XAF confirme.',
 });
 
+const passwordReset = ({ firstName, resetUrl }) => ({
+  subject: 'Reinitialisation de votre mot de passe NounouHome',
+  html: baseTemplate('Reinitialisation', `
+    <h2 style="color:#F05A48;margin-top:0;">Reinitialisation de mot de passe</h2>
+    <p>Bonjour ${firstName},</p>
+    <p>Vous avez demande a reinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous :</p>
+    <div style="text-align:center;">
+      <a href="${resetUrl}" style="${btn}">Reinitialiser mon mot de passe</a>
+    </div>
+    <p style="color:#666;font-size:14px;">Ce lien expire dans <strong>1 heure</strong>.</p>
+    <p style="color:#666;font-size:14px;">Si vous n'avez pas fait cette demande, ignorez cet email.</p>
+    <p style="color:#999;font-size:12px;margin-top:20px;">Ou copiez ce lien :<br>${resetUrl}</p>
+  `),
+  text: 'Reinitialisez votre mot de passe NounouHome : ' + resetUrl,
+});
+
 module.exports = {
   welcomeParent,
   welcomeNanny,
   bookingConfirmationParent,
   bookingNotificationNanny,
   paymentReceived,
+  passwordReset,
 };

@@ -9,6 +9,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -18,6 +19,16 @@ export default function Navbar() {
     if (stored) { try { setUser(JSON.parse(stored)); } catch (e) {} }
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuOpen && !event.target.closest('.user-menu-container')) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [userMenuOpen]);
 
   const navLinks = user?.role === 'NANNY'
     ? [
@@ -72,10 +83,69 @@ export default function Navbar() {
             {user && <NotificationCenter />}
 
             {user ? (
-              <Link href={dashboardUrl} className="btn-primary !py-2.5 !px-5 !text-sm flex items-center gap-2">
-                Mon espace
-                <Icon name="arrowRight" size={16} />
-              </Link>
+              <div className="relative user-menu-container">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="btn-primary !py-2.5 !px-5 !text-sm flex items-center gap-2"
+                >
+                  {user.firstName || 'Mon espace'}
+                  <Icon name="chevronDown" size={16} />
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-soft-xl border border-gray-100 overflow-hidden z-50">
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-coral-50 transition-colors text-sm text-gray-700"
+                    >
+                      <Icon name="home" size={16} />
+                      Tableau de bord
+                    </Link>
+
+                    <Link
+                      href="/profile"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-coral-50 transition-colors text-sm text-gray-700"
+                    >
+                      <Icon name="user" size={16} />
+                      Mon profil
+                    </Link>
+
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-coral-50 transition-colors text-sm text-gray-700"
+                    >
+                      <Icon name="calendar" size={16} />
+                      Mes reservations
+                    </Link>
+
+                    <Link
+                      href="/messages"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-coral-50 transition-colors text-sm text-gray-700"
+                    >
+                      <Icon name="messageCircle" size={16} />
+                      Messages
+                    </Link>
+
+                    <div className="border-t border-gray-100">
+                      <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          localStorage.clear();
+                          window.location.href = '/';
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-sm text-red-600"
+                      >
+                        <Icon name="logout" size={16} />
+                        Deconnexion
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <Link href="/login" className="hidden md:inline-flex px-4 py-2.5 text-sm font-semibold text-gray-700 hover:text-coral-500 transition-colors rounded-full hover:bg-coral-50">

@@ -102,6 +102,14 @@ export default function Login() {
               ⚠️ {error}
             </div>
           )}
+          <div className="text-right -mt-2">
+  <Link
+    href="/forgot-password"
+    className="text-xs text-coral-600 hover:underline font-semibold"
+  >
+    Mot de passe oublie ?
+  </Link>
+</div>
 
           <button type="submit" disabled={loading} className="btn-primary w-full !py-4 disabled:opacity-50">
             {loading ? '⏳ Connexion...' : '🚀 Se connecter'}

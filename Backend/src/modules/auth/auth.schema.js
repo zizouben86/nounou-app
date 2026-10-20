@@ -7,6 +7,9 @@ const registerSchema = z.object({
   lastName: z.string().min(1),
   phone: z.string().optional(),
   role: z.enum(['PARENT', 'NANNY']),
+  city: z.string().optional(),
+  address: z.string().optional(),
+  postalCode: z.string().optional(),
 });
 
 const loginSchema = z.object({
@@ -14,4 +17,4 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
-module.exports = { registerSchema, loginSchema };   // 👈 INDISPENSABLE
+module.exports = { registerSchema, loginSchema };

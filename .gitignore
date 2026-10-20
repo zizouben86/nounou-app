@@ -86,3 +86,5 @@ Thumbs.db
 !frontend/package.json
 !Backend/prisma/schema.prisma
 !Backend/prisma/migrations/
+*.corrupted
+Backend/test-geo.js

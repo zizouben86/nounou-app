@@ -14,6 +14,7 @@ const messageRoutes = require('./modules/messages/messages.routes');
 const campayWebhookRoutes = require('./modules/payments/campay.webhook.routes');
 const campayRoutes = require('./modules/payments/campay.routes');
 const adminRoutes = require('./modules/admin/admin.routes');
+const userRoutes = require('./modules/users/users.routes');
 const notificationRoutes = require('./modules/notifications/notifications.routes');
 const { errorHandler } = require('./middlewares/error.middleware');
 
@@ -53,6 +54,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/payments/campay', campayRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 
 // 8. Gestionnaire d'erreurs (TOUJOURS EN DERNIER)
