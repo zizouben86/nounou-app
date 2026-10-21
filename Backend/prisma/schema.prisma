@@ -99,6 +99,14 @@ model NannyProfile {
   isAvailable        Boolean            @default(true)
   ratingAvg          Float              @default(0)
   ratingCount        Int                @default(0)
+  
+  // 👇 Nouveaux champs de vérification 👇
+  idCardUrl          String?
+  criminalRecordUrl  String?
+  diplomaUrl         String?
+  verificationNotes  String?
+  // 👆 ------------------------------- 👆
+
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 

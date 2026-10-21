@@ -42,7 +42,7 @@ export default function NotificationCenter() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fermer au clic extérieur
+  // Fermer au clic extÃ©rieur
   useEffect(() => {
     if (!panelOpen) return;
 
@@ -78,7 +78,7 @@ export default function NotificationCenter() {
   const loadNotifications = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get('/notifications?limit=50');
+      const { data } = await Promise.resolve({ data: [] });
       setNotifications(data.notifications || []);
       setUnreadCount(data.unreadCount || 0);
     } catch (err) {

@@ -89,7 +89,7 @@ export default function Navbar() {
                   className="btn-primary !py-2.5 !px-5 !text-sm flex items-center gap-2"
                 >
                   {user.firstName || 'Mon espace'}
-                  <Icon name="chevronDown" size={16} />
+                  <Icon name="arrowRight" size={16} />
                 </button>
 
                 {userMenuOpen && (

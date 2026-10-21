@@ -11,6 +11,7 @@ const CERTIFICATIONS = ['CAP Petite Enfance', 'BAFA', 'PSC1', 'Auxiliaire de pu�
 export default function NannyProfileEdit() {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -36,6 +37,7 @@ export default function NannyProfileEdit() {
     if (!user) return;
     api.get('/nannies/me')
       .then(({ data }) => {
+        setProfile(data);
         setForm({
           bio: data.bio || '',
           hourlyRate: data.hourlyRate || 15,
@@ -67,14 +69,38 @@ export default function NannyProfileEdit() {
     try {
       await api.put('/nannies/me', form);
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
       alert('✅ Profil mis a jour !');
+      
+      // Redirection vers le dashboard nounou après 1,5 seconde
+      setTimeout(() => {
+        router.push('/nanny/dashboard');
+      }, 1500);
+      
     } catch (err) {
       alert(err.response?.data?.message || 'Erreur lors de la sauvegarde');
-    } finally {
       setSaving(false);
     }
   };
+
+  const handleFileUpload = async (fieldName, file) => {
+  if (!file) return;
+  const formData = new FormData();
+  formData.append(fieldName, file);
+
+  try {
+    // Envoie le fichier
+    await api.post('/nannies/me/documents', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    
+    // Recharge les données fraîches depuis la base de données
+    const { data } = await api.get('/nannies/me');
+    setProfile(data);
+    alert('✅ Document envoyé avec succès !');
+  } catch (err) {
+    alert(err.response?.data?.message || 'Erreur lors de l envoi');
+  }
+};
 
   if (!user || loading) {
     return (
@@ -99,7 +125,6 @@ export default function NannyProfileEdit() {
       <main className="pt-32 pb-16 min-h-screen bg-gradient-to-br from-cream to-mint-50">
         <div className="container-custom max-w-4xl">
 
-          {/* Header */}
           <div className="mb-6">
             <Link
               href="/nanny/dashboard"
@@ -111,7 +136,7 @@ export default function NannyProfileEdit() {
               Mon profil
             </h1>
             <p className="text-gray-600 mt-1">
-              Completer votre profil augmente vos chances d'etre contactee
+              Completer votre profil augmente vos chances d etre contactee
             </p>
           </div>
 
@@ -133,7 +158,6 @@ export default function NannyProfileEdit() {
             </div>
           </div>
 
-          {/* Formulaire */}
           <form onSubmit={save} className="space-y-6">
 
             {/* Bio */}
@@ -151,6 +175,51 @@ export default function NannyProfileEdit() {
               <p className="text-xs text-gray-500 mt-2">
                 {form.bio.length}/500 caracteres
               </p>
+            </div>
+
+            {/* Section Verification */}
+            <div className="bg-white rounded-3xl shadow-soft p-6">
+              <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+                🛡️ Verification d identite
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Pour rassurer les parents, veuillez fournir vos documents. Vos informations restent confidentielles.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Piece d identite (CNI/Passeport) *</label>
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    onChange={(e) => handleFileUpload('idCard', e.target.files[0])}
+                    className="input-modern"
+                  />
+                  {profile?.idCardUrl && <span className="text-xs text-mint-600 mt-1 block">✅ Document deja fourni</span>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Casier judiciaire (moins de 3 mois) *</label>
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    onChange={(e) => handleFileUpload('criminalRecord', e.target.files[0])}
+                    className="input-modern"
+                  />
+                  {profile?.criminalRecordUrl && <span className="text-xs text-mint-600 mt-1 block">✅ Document deja fourni</span>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Diplomes (optionnel)</label>
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    onChange={(e) => handleFileUpload('diploma', e.target.files[0])}
+                    className="input-modern"
+                  />
+                  {profile?.diplomaUrl && <span className="text-xs text-mint-600 mt-1 block">✅ Document deja fourni</span>}
+                </div>
+              </div>
             </div>
 
             {/* Tarif et experience */}
@@ -177,7 +246,7 @@ export default function NannyProfileEdit() {
 
               <div className="bg-white rounded-3xl shadow-soft p-6">
                 <label className="block font-bold text-lg mb-3">
-                  🎓 Annees d'experience
+                  🎓 Annees d experience
                 </label>
                 <div className="relative">
                   <input
@@ -297,7 +366,6 @@ export default function NannyProfileEdit() {
   );
 }
 
-// Calcul du pourcentage de completion
 function calculateCompletion(form) {
   let score = 0;
   const checks = [

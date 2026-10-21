@@ -2,6 +2,9 @@
 import { useEffect, useState } from 'react';
 import api from '../../../lib/api';
 
+// URL du backend pour afficher les fichiers
+const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:4000';
+
 export default function AdminNannies() {
   const [pending, setPending] = useState([]);
   const [all, setAll] = useState([]);
@@ -12,9 +15,11 @@ export default function AdminNannies() {
   const load = () => {
     setLoading(true);
     Promise.all([
-      api.get('/admin/nannies/pending').catch(() => ({ data: [] })),
-      api.get('/nannies').catch(() => ({ data: [] })),
+      api.get('/admin/nannies/pending').catch((err) => { console.error("Erreur pending:", err); return { data: [] }; }),
+      api.get('/nannies').catch((err) => { console.error("Erreur all:", err); return { data: [] }; }),
     ]).then(([pendingRes, allRes]) => {
+      console.log("Pending data:", pendingRes.data);
+      console.log("All data:", allRes.data);
       setPending(pendingRes.data || []);
       setAll(allRes.data || []);
       setLoading(false);
@@ -29,15 +34,22 @@ export default function AdminNannies() {
       await api.patch('/admin/nannies/' + id + '/verify', { status });
       setPending(pending.filter((n) => n.id !== id));
       setSelected(null);
+      load();
     } catch (err) {
       alert(err.response?.data?.message || 'Erreur');
     }
   };
 
+  // Fonction pour afficher l'URL complète du fichier
+  const getFileUrl = (path) => {
+    if (!path) return null;
+    return `${API_URL}${path}`;
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-3xl shadow-soft p-8">
-        <h1 className="text-3xl font-extrabold mb-2">Verification des nounous</h1>
+        <h1 className="text-3xl font-extrabold mb-2">Vérification des nounous</h1>
         <p className="text-gray-600">Validez ou rejetez les profils en attente</p>
       </div>
 
@@ -52,7 +64,7 @@ export default function AdminNannies() {
           onClick={() => setTab('all')}
           className={'px-5 py-2.5 rounded-full font-semibold text-sm transition-all ' + (tab === 'all' ? 'bg-coral-500 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-coral-50')}
         >
-          ✅ Verifiees ({all.length})
+          ✅ Toutes les nounous ({all.length})
         </button>
       </div>
 
@@ -60,7 +72,7 @@ export default function AdminNannies() {
         <div className="bg-white rounded-3xl shadow-soft p-12 text-center text-gray-500">
           Chargement...
         </div>
-      ) : tab === 'pending' && pending.length === 0 ? (
+      ) : (tab === 'pending' && pending.length === 0) ? (
         <div className="bg-white rounded-3xl shadow-soft p-12 text-center">
           <div className="text-6xl mb-3">✅</div>
           <p className="text-gray-600">Aucune nounou en attente</p>
@@ -75,12 +87,12 @@ export default function AdminNannies() {
                     👩‍🍼
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <h3 className="font-bold text-lg">
                         {nanny.user.firstName} {nanny.user.lastName}
                       </h3>
                       {nanny.verificationStatus === 'VERIFIED' && (
-                        <span className="badge-mint">✓ Verifiee</span>
+                        <span className="badge-mint">✓ Vérifiée</span>
                       )}
                       {nanny.verificationStatus === 'PENDING' && (
                         <span className="badge-sun">⏳ En attente</span>
@@ -88,8 +100,12 @@ export default function AdminNannies() {
                     </div>
                     <div className="text-sm text-gray-500 space-y-0.5">
                       <div>📧 {nanny.user.email}</div>
-                      <div>📍 {nanny.city} · 💰 {nanny.hourlyRate} EUR/h · 🎓 {nanny.experienceYears} ans d exp.</div>
-                      {nanny.bio && <div className="italic mt-1">"{nanny.bio}"</div>}
+                      <div>📍 {nanny.city} · 💰 {nanny.hourlyRate} EUR/h</div>
+                      {/* Indicateur de documents */}
+                      <div className="flex gap-2 mt-1">
+                        {nanny.idCardUrl ? <span className="text-xs text-green-600 font-bold">📄 CNI OK</span> : <span className="text-xs text-red-400">❌ CNI</span>}
+                        {nanny.criminalRecordUrl ? <span className="text-xs text-green-600 font-bold">📄 Casier OK</span> : <span className="text-xs text-red-400">❌ Casier</span>}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -99,7 +115,7 @@ export default function AdminNannies() {
                     onClick={() => setSelected(nanny)}
                     className="btn-outline !py-2 !px-4 !text-sm"
                   >
-                    👁️ Details
+                    👁️ Détails
                   </button>
                   {tab === 'pending' && (
                     <>
@@ -131,7 +147,7 @@ export default function AdminNannies() {
           onClick={() => setSelected(null)}
         >
           <div
-            className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 max-h-[80vh] overflow-y-auto"
+            className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-8 max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-start mb-6">
@@ -151,56 +167,80 @@ export default function AdminNannies() {
               </button>
             </div>
 
-            <div className="space-y-4">
-              <div className="bg-cream-50 rounded-2xl p-4">
-                <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Bio</div>
-                <p className="text-gray-700">{selected.bio || 'Non renseignee'}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-4">
                 <div className="bg-cream-50 rounded-2xl p-4">
-                  <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Tarif</div>
-                  <div className="text-2xl font-bold text-coral-600">{selected.hourlyRate} EUR/h</div>
+                  <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Bio</div>
+                  <p className="text-gray-700">{selected.bio || 'Non renseignée'}</p>
                 </div>
                 <div className="bg-cream-50 rounded-2xl p-4">
-                  <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Experience</div>
-                  <div className="text-2xl font-bold">{selected.experienceYears} ans</div>
+                  <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Tarif / Expérience</div>
+                  <div className="text-gray-700 font-semibold">{selected.hourlyRate} EUR/h · {selected.experienceYears} ans</div>
                 </div>
               </div>
 
-              <div className="bg-cream-50 rounded-2xl p-4">
-                <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Ville</div>
-                <div className="text-gray-700">{selected.city} ({selected.postalCode})</div>
-              </div>
+              {/* Documents */}
+              <div className="bg-blue-50 border-2 border-blue-100 rounded-2xl p-4">
+                <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
+                  🛡️ Documents de vérification
+                </h3>
+                <div className="space-y-3">
+                  <div className="bg-white rounded-xl p-3 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-700">CNI / Passeport</span>
+                    {selected.idCardUrl ? (
+                      <a 
+                        href={getFileUrl(selected.idCardUrl)} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-xs font-bold text-coral-600 hover:underline bg-coral-50 px-3 py-1 rounded-full"
+                      >
+                        👁️ Ouvrir
+                      </a>
+                    ) : (
+                      <span className="text-xs text-red-500 font-semibold">❌ Manquant</span>
+                    )}
+                  </div>
 
-              {selected.languages && selected.languages.length > 0 && (
-                <div className="bg-cream-50 rounded-2xl p-4">
-                  <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Langues</div>
-                  <div className="flex flex-wrap gap-2">
-                    {selected.languages.map((l, i) => (
-                      <span key={i} className="badge-coral">{l}</span>
-                    ))}
+                  <div className="bg-white rounded-xl p-3 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-700">Casier judiciaire</span>
+                    {selected.criminalRecordUrl ? (
+                      <a 
+                        href={getFileUrl(selected.criminalRecordUrl)} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-xs font-bold text-coral-600 hover:underline bg-coral-50 px-3 py-1 rounded-full"
+                      >
+                        👁️ Ouvrir
+                      </a>
+                    ) : (
+                      <span className="text-xs text-red-500 font-semibold">❌ Manquant</span>
+                    )}
+                  </div>
+
+                  <div className="bg-white rounded-xl p-3 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-700">Diplômes</span>
+                    {selected.diplomaUrl ? (
+                      <a 
+                        href={getFileUrl(selected.diplomaUrl)} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-xs font-bold text-coral-600 hover:underline bg-coral-50 px-3 py-1 rounded-full"
+                      >
+                        👁️ Ouvrir
+                      </a>
+                    ) : (
+                      <span className="text-xs text-gray-400">Optionnel</span>
+                    )}
                   </div>
                 </div>
-              )}
-
-              {selected.certifications && selected.certifications.length > 0 && (
-                <div className="bg-cream-50 rounded-2xl p-4">
-                  <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Certifications</div>
-                  <div className="flex flex-wrap gap-2">
-                    {selected.certifications.map((c, i) => (
-                      <span key={i} className="badge-mint">{c}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
 
             {selected.verificationStatus === 'PENDING' && (
-              <div className="flex gap-3 mt-6">
+              <div className="flex gap-3 pt-4 border-t border-gray-100">
                 <button
                   onClick={() => verify(selected.id, 'REJECTED')}
-                  className="btn-outline flex-1 !text-red-600 !border-red-200"
+                  className="btn-outline flex-1 !text-red-600 !border-red-200 hover:!bg-red-50"
                 >
                   ❌ Rejeter
                 </button>

@@ -89,7 +89,11 @@ const getMe = async (userId) => {
 
 const updateMyProfile = async (userId, data) => {
   // Filtrer les champs autorisés
-  const allowed = ['bio', 'hourlyRate', 'experienceYears', 'city', 'postalCode', 'languages', 'certifications', 'isAvailable'];
+  const allowed = [
+  'bio', 'hourlyRate', 'experienceYears', 'city', 'postalCode', 
+  'languages', 'certifications', 'isAvailable',
+  'idCardUrl', 'criminalRecordUrl', 'diplomaUrl', 'verificationNotes'
+];
   const updateData = {};
   allowed.forEach((field) => {
     if (data[field] !== undefined) updateData[field] = data[field];

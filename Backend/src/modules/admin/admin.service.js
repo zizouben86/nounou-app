@@ -1,26 +1,19 @@
 const prisma = require('../../config/prisma');
 
 const getStats = async () => {
-  const [
-    totalUsers,
-    totalParents,
-    totalNannies,
-    pendingNannies,
-    totalBookings,
-    completedBookings,
-    revenueAgg,
-  ] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({ where: { role: 'PARENT' } }),
-    prisma.user.count({ where: { role: 'NANNY' } }),
-    prisma.nannyProfile.count({ where: { verificationStatus: 'PENDING' } }),
-    prisma.booking.count(),
-    prisma.booking.count({ where: { status: 'COMPLETED' } }),
-    prisma.booking.aggregate({
-      where: { status: 'COMPLETED' },
-      _sum: { commission: true, totalPrice: true },
-    }),
-  ]);
+  const [totalUsers, totalParents, totalNannies, pendingNannies, totalBookings, completedBookings, revenueAgg] =
+    await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { role: 'PARENT' } }),
+      prisma.user.count({ where: { role: 'NANNY' } }),
+      prisma.nannyProfile.count({ where: { verificationStatus: 'PENDING' } }),
+      prisma.booking.count(),
+      prisma.booking.count({ where: { status: 'COMPLETED' } }),
+      prisma.booking.aggregate({
+        where: { status: 'COMPLETED' },
+        _sum: { commission: true, totalPrice: true },
+      }),
+    ]);
 
   return {
     users: { total: totalUsers, parents: totalParents, nannies: totalNannies },
@@ -47,7 +40,7 @@ const listAllUsers = async ({ role, page = 1, limit = 20 }) => {
     prisma.user.findMany({
       where,
       skip: (page - 1) * limit,
-      take: limit,
+      take: Number(limit),
       orderBy: { createdAt: 'desc' },
       select: {
         id: true, email: true, firstName: true, lastName: true,
@@ -56,13 +49,11 @@ const listAllUsers = async ({ role, page = 1, limit = 20 }) => {
     }),
     prisma.user.count({ where }),
   ]);
-  return { users, total, page, pages: Math.ceil(total / limit) };
+  return { users, total, page: Number(page), pages: Math.ceil(total / limit) };
 };
 
 const verifyNanny = async (nannyId, status) => {
-  if (!['VERIFIED', 'REJECTED'].includes(status)) {
-    throw new Error('Statut invalide');
-  }
+  if (!['VERIFIED', 'REJECTED'].includes(status)) throw new Error('Statut invalide');
   return prisma.nannyProfile.update({
     where: { id: nannyId },
     data: { verificationStatus: status, isAvailable: status === 'VERIFIED' },
@@ -75,7 +66,7 @@ const listAllBookings = async ({ status, page = 1, limit = 20 }) => {
     prisma.booking.findMany({
       where,
       skip: (page - 1) * limit,
-      take: limit,
+      take: Number(limit),
       orderBy: { createdAt: 'desc' },
       include: {
         parent: { include: { user: { select: { firstName: true, lastName: true } } } },
@@ -84,11 +75,11 @@ const listAllBookings = async ({ status, page = 1, limit = 20 }) => {
     }),
     prisma.booking.count({ where }),
   ]);
-  return { bookings, total, page, pages: Math.ceil(total / limit) };
+  return { bookings, total, page: Number(page), pages: Math.ceil(total / limit) };
 };
 
 const updateUserRole = async (userId, role) => {
-  if (!['PARENT', 'NANNY', 'ADMIN'].includes(role)) throw new Error('Rôle invalide');
+  if (!['PARENT', 'NANNY', 'ADMIN'].includes(role)) throw new Error('Role invalide');
   return prisma.user.update({ where: { id: userId }, data: { role } });
 };
 
@@ -97,11 +88,6 @@ const deleteUser = async (userId) => {
 };
 
 module.exports = {
-  getStats,
-  listPendingNannies,
-  listAllUsers,
-  verifyNanny,
-  listAllBookings,
-  updateUserRole,
-  deleteUser,
+  getStats, listPendingNannies, listAllUsers,
+  verifyNanny, listAllBookings, updateUserRole, deleteUser,
 };
