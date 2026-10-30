@@ -5,7 +5,7 @@ import Link from 'next/link';
 import api from '../../../lib/api';
 import Navbar from '../../../components/Navbar';
 
-const LANGUES = ['Francais', 'Anglais', 'Espagnol', 'Arabe', 'Douala', 'Bamilike', 'Ewondo'];
+const LANGUES = ['Français', 'Anglais', 'Espagnol', 'Arabe', 'Douala', 'Bamiliké', 'Ewondo'];
 const CERTIFICATIONS = ['CAP Petite Enfance', 'BAFA', 'PSC1', 'Auxiliaire de puériculture', 'Assistante maternelle'];
 
 export default function NannyProfileEdit() {
@@ -69,7 +69,7 @@ export default function NannyProfileEdit() {
     try {
       await api.put('/nannies/me', form);
       setSaved(true);
-      alert('✅ Profil mis a jour !');
+      alert('✅ Profil mis à jour !');
       
       // Redirection vers le dashboard nounou après 1,5 seconde
       setTimeout(() => {
@@ -83,24 +83,22 @@ export default function NannyProfileEdit() {
   };
 
   const handleFileUpload = async (fieldName, file) => {
-  if (!file) return;
-  const formData = new FormData();
-  formData.append(fieldName, file);
+    if (!file) return;
+    const formData = new FormData();
+    formData.append(fieldName, file);
 
-  try {
-    // Envoie le fichier
-    await api.post('/nannies/me/documents', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    
-    // Recharge les données fraîches depuis la base de données
-    const { data } = await api.get('/nannies/me');
-    setProfile(data);
-    alert('✅ Document envoyé avec succès !');
-  } catch (err) {
-    alert(err.response?.data?.message || 'Erreur lors de l envoi');
-  }
-};
+    try {
+      await api.post('/nannies/me/documents', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      
+      const { data } = await api.get('/nannies/me');
+      setProfile(data);
+      alert('✅ Document envoyé avec succès !');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Erreur lors de l envoi');
+    }
+  };
 
   if (!user || loading) {
     return (
@@ -136,7 +134,7 @@ export default function NannyProfileEdit() {
               Mon profil
             </h1>
             <p className="text-gray-600 mt-1">
-              Completer votre profil augmente vos chances d etre contactee
+              Compléter votre profil augmente vos chances d'être contactée
             </p>
           </div>
 
@@ -144,7 +142,7 @@ export default function NannyProfileEdit() {
           <div className="bg-white rounded-3xl shadow-soft p-6 mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-gray-700">
-                Completion du profil
+                Complétion du profil
               </span>
               <span className="text-sm font-bold text-coral-600">
                 {calculateCompletion(form)}%
@@ -163,24 +161,24 @@ export default function NannyProfileEdit() {
             {/* Bio */}
             <div className="bg-white rounded-3xl shadow-soft p-6">
               <label className="block font-bold text-lg mb-3 flex items-center gap-2">
-                📝 A propos de moi
+                📝 À propos de moi
               </label>
               <textarea
                 value={form.bio}
                 onChange={(e) => setForm({ ...form, bio: e.target.value })}
                 className="input-modern"
                 rows={5}
-                placeholder="Decrivez votre experience, votre approche avec les enfants, vos qualites..."
+                placeholder="Décrivez votre expérience, votre approche avec les enfants, vos qualités..."
               />
               <p className="text-xs text-gray-500 mt-2">
-                {form.bio.length}/500 caracteres
+                {form.bio.length}/500 caractères
               </p>
             </div>
 
-            {/* Section Verification */}
+            {/* Section Vérification */}
             <div className="bg-white rounded-3xl shadow-soft p-6">
               <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                🛡️ Verification d identite
+                🛡️ Vérification d'identité
               </h3>
               <p className="text-sm text-gray-600 mb-4">
                 Pour rassurer les parents, veuillez fournir vos documents. Vos informations restent confidentielles.
@@ -188,14 +186,14 @@ export default function NannyProfileEdit() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold mb-1">Piece d identite (CNI/Passeport) *</label>
+                  <label className="block text-sm font-semibold mb-1">Pièce d'identité (CNI/Passeport) *</label>
                   <input
                     type="file"
                     accept=".jpg,.jpeg,.png,.pdf"
                     onChange={(e) => handleFileUpload('idCard', e.target.files[0])}
                     className="input-modern"
                   />
-                  {profile?.idCardUrl && <span className="text-xs text-mint-600 mt-1 block">✅ Document deja fourni</span>}
+                  {profile?.idCardUrl && <span className="text-xs text-mint-600 mt-1 block">✅ Document déjà fourni</span>}
                 </div>
 
                 <div>
@@ -206,23 +204,23 @@ export default function NannyProfileEdit() {
                     onChange={(e) => handleFileUpload('criminalRecord', e.target.files[0])}
                     className="input-modern"
                   />
-                  {profile?.criminalRecordUrl && <span className="text-xs text-mint-600 mt-1 block">✅ Document deja fourni</span>}
+                  {profile?.criminalRecordUrl && <span className="text-xs text-mint-600 mt-1 block">✅ Document déjà fourni</span>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold mb-1">Diplomes (optionnel)</label>
+                  <label className="block text-sm font-semibold mb-1">Diplômes (optionnel)</label>
                   <input
                     type="file"
                     accept=".jpg,.jpeg,.png,.pdf"
                     onChange={(e) => handleFileUpload('diploma', e.target.files[0])}
                     className="input-modern"
                   />
-                  {profile?.diplomaUrl && <span className="text-xs text-mint-600 mt-1 block">✅ Document deja fourni</span>}
+                  {profile?.diplomaUrl && <span className="text-xs text-mint-600 mt-1 block">✅ Document déjà fourni</span>}
                 </div>
               </div>
             </div>
 
-            {/* Tarif et experience */}
+            {/* Tarif et expérience */}
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-white rounded-3xl shadow-soft p-6">
                 <label className="block font-bold text-lg mb-3">
@@ -233,20 +231,20 @@ export default function NannyProfileEdit() {
                     type="number"
                     value={form.hourlyRate}
                     onChange={(e) => setForm({ ...form, hourlyRate: parseFloat(e.target.value) || 0 })}
-                    className="input-modern !pr-16"
+                    className="input-modern !pr-20"
                     min="1"
-                    max="500"
+                    max="50000"
                     required
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
-                    EUR/h
+                    FCFA/h
                   </span>
                 </div>
               </div>
 
               <div className="bg-white rounded-3xl shadow-soft p-6">
                 <label className="block font-bold text-lg mb-3">
-                  🎓 Annees d experience
+                  🎓 Années d'expérience
                 </label>
                 <div className="relative">
                   <input
@@ -288,14 +286,14 @@ export default function NannyProfileEdit() {
                 />
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                💡 Changez votre ville mettra a jour votre position sur la carte
+                💡 Changez votre ville mettra à jour votre position sur la carte
               </p>
             </div>
 
             {/* Langues */}
             <div className="bg-white rounded-3xl shadow-soft p-6">
               <label className="block font-bold text-lg mb-4">
-                🗣️ Langues parlees
+                🗣️ Langues parlées
               </label>
               <div className="flex flex-wrap gap-2">
                 {LANGUES.map((lang) => {
@@ -322,7 +320,7 @@ export default function NannyProfileEdit() {
             {/* Certifications */}
             <div className="bg-white rounded-3xl shadow-soft p-6">
               <label className="block font-bold text-lg mb-4">
-                🎓 Diplomes et certifications
+                🎓 Diplômes et certifications
               </label>
               <div className="flex flex-wrap gap-2">
                 {CERTIFICATIONS.map((cert) => {
@@ -356,7 +354,7 @@ export default function NannyProfileEdit() {
                 disabled={saving}
                 className="btn-primary flex-1 disabled:opacity-50"
               >
-                {saving ? '⏳ Sauvegarde...' : saved ? '✅ Enregistre !' : '💾 Enregistrer les modifications'}
+                {saving ? '⏳ Sauvegarde...' : saved ? '✅ Enregistré !' : '💾 Enregistrer les modifications'}
               </button>
             </div>
           </form>

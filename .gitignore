@@ -88,3 +88,5 @@ Thumbs.db
 !Backend/prisma/migrations/
 *.corrupted
 Backend/test-geo.js
+
+Backend/uploads/

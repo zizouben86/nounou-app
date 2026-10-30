@@ -90,6 +90,7 @@ const updateMe = async (userId, data) => {
 
 // Ajouter un enfant
 const addChild = async (userId, data) => {
+  // Vérifie que le parent existe
   const parent = await prisma.parentProfile.findUnique({ where: { userId } });
   if (!parent) {
     const err = new Error('Profil parent introuvable');
@@ -97,6 +98,7 @@ const addChild = async (userId, data) => {
     throw err;
   }
 
+  // Crée l'enfant
   return prisma.child.create({
     data: {
       parentId: parent.id,
@@ -129,5 +131,17 @@ const deleteChild = async (userId, childId) => {
 
   return prisma.child.delete({ where: { id: childId } });
 };
+const getUserById = async (id) => {
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { id: true, firstName: true, lastName: true, email: true, role: true, avatarUrl: true },
+  });
+  if (!user) {
+    const err = new Error('Utilisateur introuvable');
+    err.status = 404;
+    throw err;
+  }
+  return user;
+};
 
-module.exports = { getMe, updateMe, addChild, deleteChild };
+module.exports = { getMe, updateMe, addChild, deleteChild, getUserById };

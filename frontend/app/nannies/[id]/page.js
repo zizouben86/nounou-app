@@ -65,9 +65,10 @@ export default function NannyProfilePage() {
   };
 
   const handleContact = () => {
-    if (!user) return router.push('/login');
-    router.push('/messages?to=' + nanny.userId);
-  };
+  if (!user) return router.push('/login');
+  // On passe l'ID et le NOM de la nounou dans l'URL
+  router.push(`/messages?to=${nanny.userId}&name=${encodeURIComponent(nanny.user.firstName + ' ' + nanny.user.lastName)}`);
+};
 
   // Calcul du prix estimé
   const estimatedPrice = () => {

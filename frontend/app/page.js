@@ -83,8 +83,8 @@ export default function Home() {
               </h1>
 
               <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed max-w-xl">
-                Trouvez en quelques clics une nounou de confiance près de chez vous.
-                Profils vérifiés, réservation simple et paiement sécurisé.
+                Trouvez en quelques clics une nounou de confiance près de chez vous au Cameroun.
+                Profils vérifiés, réservation simple et paiement sécurisé via Mobile Money.
               </p>
 
               {/* CTA */}
@@ -261,7 +261,7 @@ export default function Home() {
                     📍
                   </span>
                   <input
-                    placeholder="Ville ou code postal"
+                    placeholder="Ville (ex: Douala)"
                     value={filters.city}
                     onChange={(e) => setFilters({ ...filters, city: e.target.value })}
                     className="input-icon"
@@ -275,7 +275,7 @@ export default function Home() {
                   </span>
                   <input
                     type="number"
-                    placeholder="Tarif max (€/h)"
+                    placeholder="Tarif max (FCFA/h)"
                     value={filters.maxRate}
                     onChange={(e) => setFilters({ ...filters, maxRate: e.target.value })}
                     className="input-icon"
@@ -325,7 +325,6 @@ export default function Home() {
                       href={`/nannies/${n.id}`}
                       className="card p-6 block group relative overflow-hidden"
                     >
-                      {/* Halo au survol */}
                       <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-coral-200 to-sun-200 rounded-full opacity-0 group-hover:opacity-40 blur-2xl transition-opacity duration-700" />
 
                       <div className="flex items-center gap-4 mb-4 relative z-10">
@@ -353,7 +352,7 @@ export default function Home() {
 
                       <div className="flex justify-between items-center relative z-10 pt-3 border-t border-gray-100">
                         <span className="text-xl font-extrabold text-coral-600">
-                          {n.hourlyRate} €
+                          {n.hourlyRate} FCFA
                           <span className="text-sm font-normal text-gray-500">/h</span>
                         </span>
                         <span className="badge-sun">
@@ -398,7 +397,6 @@ export default function Home() {
           </Reveal>
 
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12 relative">
-            {/* Ligne de connexion */}
             <div className="hidden md:block absolute top-16 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-coral-200 via-mint-200 to-sun-200" />
 
             {[
@@ -422,7 +420,7 @@ export default function Home() {
                 step: '03',
                 icon: '📅',
                 title: 'Réservez',
-                desc: 'Réservez et payez en ligne en toute sécurité. Aussi simple que ça !',
+                desc: 'Réservez et payez en ligne en toute sécurité via MTN MoMo ou Orange Money.',
                 color: 'from-sun-100 to-sun-300',
                 text: 'text-sun-600',
               },
@@ -451,7 +449,7 @@ export default function Home() {
       </section>
 
       {/* ═══════════════════════════════════════════════════
-          ⭐ SECTION TÉMOIGNAGES
+          ⭐ SECTION TÉMOIGNAGES (Cameroun)
           ═══════════════════════════════════════════════════ */}
       <section className="section-padding bg-gradient-to-b from-cream to-white relative overflow-hidden">
         <div className="blob w-[400px] h-[400px] bg-coral-200 top-20 -left-32" />
@@ -465,7 +463,7 @@ export default function Home() {
                 Ils nous adorent
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Des milliers de familles nous font confiance chaque jour.
+                Des milliers de familles camerounaises nous font confiance chaque jour.
               </p>
             </div>
           </Reveal>
@@ -473,43 +471,40 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                name: 'Sophie L.',
+                name: 'Mireille N.',
                 role: 'Maman de 2 enfants',
-                text: "Une plateforme exceptionnelle ! J'ai trouvé la nounou parfaite en 2 jours. Le processus de vérification m'a rassurée.",
-                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+                text: "Grâce à NounouHome, j'ai trouvé une nounou de confiance à Douala en 48h. Le paiement par MTN MoMo est super pratique !",
+                avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&auto=format&fit=crop&q=80',
                 color: 'from-coral-100 to-coral-300',
-                city: 'Paris',
+                city: 'Douala',
               },
               {
-                name: 'Thomas M.',
+                name: 'Alain T.',
                 role: 'Papa de jumelles',
-                text: 'Enfin une solution simple et moderne pour la garde d\'enfants. Le paiement en ligne est un vrai plus !',
-                avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80',
+                text: "Enfin une plateforme adaptée au Cameroun. J'ai pu vérifier les diplômes de la nounou et payer via Orange Money sans stress.",
+                avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&auto=format&fit=crop&q=80',
                 color: 'from-mint-100 to-mint-300',
-                city: 'Lyon',
+                city: 'Yaoundé',
               },
               {
-                name: 'Amina K.',
+                name: 'Estelle M.',
                 role: 'Nounou professionnelle',
-                text: 'Grâce à NounouHome, je gère mon planning facilement et je rencontre des familles formidables. Je recommande !',
-                avatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200&auto=format&fit=crop&q=80',
+                text: "Je gère mes disponibilités facilement et je rencontre des familles sérieuses à Bafoussam. Une vraie bouffée d'oxygène !",
+                avatar: 'https://images.unsplash.com/photo-1589156280159-27698a70f29e?w=200&auto=format&fit=crop&q=80',
                 color: 'from-sun-100 to-sun-300',
-                city: 'Marseille',
+                city: 'Bafoussam',
               },
             ].map((t, i) => (
               <Reveal key={i} delay={i * 150}>
                 <div className="card p-8 h-full relative group">
-                  {/* Guillemet décoratif */}
                   <div className="absolute top-4 right-6 text-7xl text-coral-100 font-serif leading-none select-none group-hover:text-coral-200 transition-colors">
                     "
                   </div>
 
-                  {/* Badge vérifié */}
                   <div className="badge-mint mb-4">
                     ✓ Avis vérifié
                   </div>
 
-                  {/* Étoiles */}
                   <div className="flex gap-0.5 text-sun-500 text-lg mb-5">
                     ⭐⭐⭐⭐⭐
                   </div>
@@ -553,7 +548,7 @@ export default function Home() {
               Prêt à trouver votre nounou idéale ?
             </h2>
             <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Rejoignez des milliers de familles qui nous font déjà confiance.
+              Rejoignez des milliers de familles camerounaises qui nous font déjà confiance.
               Inscription gratuite en moins d'une minute.
             </p>
 
@@ -592,7 +587,7 @@ export default function Home() {
                 <span className="text-2xl font-extrabold text-white">NounouHome</span>
               </div>
               <p className="text-sm text-gray-400 leading-relaxed mb-4">
-                La plateforme de confiance pour la garde d'enfants à domicile en France.
+                La plateforme de confiance pour la garde d'enfants à domicile au Cameroun.
               </p>
               <div className="flex gap-2">
                 {['📘', '📷', '🐦', '💼'].map((icon, i) => (
@@ -610,11 +605,16 @@ export default function Home() {
             <div>
               <h4 className="font-bold text-white mb-4">Découvrir</h4>
               <ul className="space-y-2 text-sm">
-                {['Trouver une nounou', 'Devenir nounou', 'Tarifs', 'Avis clients'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-coral-400 transition-colors">
-                      {item}
-                    </a>
+                {[
+                  { label: 'Trouver une nounou', href: '/nannies' },
+                  { label: 'Devenir nounou', href: '/register' },
+                  { label: 'À propos', href: '/about' },
+                  { label: 'Avis clients', href: '/#how' }
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-coral-400 transition-colors">
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -623,11 +623,16 @@ export default function Home() {
             <div>
               <h4 className="font-bold text-white mb-4">Aide</h4>
               <ul className="space-y-2 text-sm">
-                {['FAQ', 'Contact', 'CGU', 'Confidentialité'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-coral-400 transition-colors">
-                      {item}
-                    </a>
+                {[
+                  { label: 'FAQ', href: '/faq' },
+                  { label: 'Contact', href: '/contact' },
+                  { label: 'CGU', href: '/terms' },
+                  { label: 'Confidentialité', href: '/privacy' }
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-coral-400 transition-colors">
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -652,8 +657,8 @@ export default function Home() {
           </div>
 
           <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <p>© 2025 NounouHome. Tous droits réservés.</p>
-            <p>Fait avec 💛 en France</p>
+            <p>© 2026 NounouHome. Tous droits réservés.</p>
+            <p>Fait avec 💛 au Cameroun</p>
           </div>
         </div>
       </footer>

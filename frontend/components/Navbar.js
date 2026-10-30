@@ -45,6 +45,7 @@ export default function Navbar() {
       ];
 
   const dashboardUrl = user?.role === 'NANNY' ? '/nanny/dashboard' : '/dashboard';
+  const profileUrl = user?.role === 'NANNY' ? '/nanny/profile' : '/profile';
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'pt-3' : 'pt-5'}`}>
@@ -104,7 +105,7 @@ export default function Navbar() {
                     </Link>
 
                     <Link
-                      href="/profile"
+                      href={profileUrl}
                       onClick={() => setUserMenuOpen(false)}
                       className="flex items-center gap-3 px-4 py-3 hover:bg-coral-50 transition-colors text-sm text-gray-700"
                     >

@@ -15,7 +15,8 @@ const authenticate = (req, res, next) => {
 };
 
 const authorize = (...roles) => (req, res, next) => {
-  if (!roles.includes(req.user.role)) {
+  // On s'assure que req.user existe et que son rôle est dans la liste
+  if (!req.user || !roles.includes(req.user.role)) {
     return res.status(403).json({ message: 'Accès refusé' });
   }
   next();

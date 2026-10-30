@@ -10,5 +10,6 @@ router.put('/me', controller.updateMe);
 // Enfants (parents uniquement)
 router.post('/me/children', authorize('PARENT'), controller.addChild);
 router.delete('/me/children/:childId', authorize('PARENT'), controller.deleteChild);
+router.get('/:id', controller.getUserById);
 
 module.exports = router;

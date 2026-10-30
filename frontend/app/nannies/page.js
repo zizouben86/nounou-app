@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import api from '../../lib/api';
 import Navbar from '../../components/Navbar';
 
+// Chargement dynamique de la carte (SSR incompatible)
 const NannyMap = dynamic(() => import('../../components/NannyMap'), {
   ssr: false,
   loading: () => <div className="h-[500px] bg-cream-100 rounded-3xl animate-pulse" />,
@@ -23,6 +24,7 @@ export default function NanniesList() {
   const [showMap, setShowMap] = useState(true);
 
   useEffect(() => {
+    // Demander la géolocalisation au chargement
     if (typeof navigator !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -31,7 +33,7 @@ export default function NanniesList() {
             longitude: position.coords.longitude,
           });
         },
-        () => console.log('Geolocalisation refusee')
+        () => console.log('Géolocalisation refusée')
       );
     }
     search();
@@ -63,20 +65,21 @@ export default function NanniesList() {
           <p className="text-gray-600 mb-6">
             {userLocation
               ? `📍 Recherche autour de vous (${filters.maxKm} km)`
-              : '📍 Activez la geolocalisation pour voir les nounous pres de vous'}
+              : '📍 Activez la géolocalisation pour voir les nounous près de vous'}
           </p>
 
+          {/* Filtres */}
           <div className="bg-white p-6 rounded-3xl shadow-soft mb-6">
             <div className="grid md:grid-cols-5 gap-4">
               <input
-                placeholder="Ville"
+                placeholder="Ville (ex: Douala)"
                 value={filters.city}
                 onChange={(e) => setFilters({ ...filters, city: e.target.value })}
                 className="input-modern"
               />
               <input
                 type="number"
-                placeholder="Tarif max"
+                placeholder="Tarif max (FCFA/h)"
                 value={filters.maxRate}
                 onChange={(e) => setFilters({ ...filters, maxRate: e.target.value })}
                 className="input-modern"
@@ -98,29 +101,32 @@ export default function NanniesList() {
                 <option value="50">Dans 50 km</option>
               </select>
               <button onClick={search} disabled={loading} className="btn-primary">
-                {loading ? 'Recherche...' : 'Rechercher'}
+                {loading ? '⏳' : '🔍 Rechercher'}
               </button>
             </div>
           </div>
 
+          {/* Toggle carte/liste */}
           <div className="flex justify-between items-center mb-4">
             <p className="text-sm text-gray-600">
-              <strong>{nannies.length}</strong> nounou(s) trouvee(s)
+              <strong>{nannies.length}</strong> nounou(s) trouvée(s)
             </p>
             <button
               onClick={() => setShowMap(!showMap)}
               className="btn-outline !py-2 !px-4 !text-sm"
             >
-              {showMap ? 'Voir la liste' : 'Voir la carte'}
+              {showMap ? '📋 Voir la liste' : '🗺️ Voir la carte'}
             </button>
           </div>
 
+          {/* Carte */}
           {showMap && (
             <div className="mb-8">
               <NannyMap nannies={nannies} userLocation={userLocation} />
             </div>
           )}
 
+          {/* Liste */}
           {!showMap && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {nannies.map((n) => (
@@ -137,12 +143,12 @@ export default function NanniesList() {
                     </div>
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-coral-600 font-bold">{n.hourlyRate} EUR/h</span>
+                    <span className="text-coral-600 font-bold">{n.hourlyRate} FCFA/h</span>
                     <span className="badge-sun">⭐ {n.ratingAvg.toFixed(1)}</span>
                   </div>
-                  {n.distance !== undefined && n.distance !== null && (
+                  {n.distance && (
                     <div className="mt-2 text-xs text-mint-600 font-semibold">
-                      📏 A {n.distance} km de vous
+                      📏 À {n.distance} km de vous
                     </div>
                   )}
                 </Link>
@@ -153,7 +159,7 @@ export default function NanniesList() {
           {nannies.length === 0 && !loading && (
             <div className="text-center py-16">
               <div className="text-6xl mb-4 animate-float">🔍</div>
-              <p className="text-gray-500">Aucune nounou trouvee avec ces filtres.</p>
+              <p className="text-gray-500">Aucune nounou trouvée avec ces filtres.</p>
             </div>
           )}
         </div>

@@ -61,7 +61,7 @@ export default function AdminBookings() {
         <div className="bg-white rounded-3xl shadow-soft p-12 text-center text-gray-500">Chargement...</div>
       ) : bookings.length === 0 ? (
         <div className="bg-white rounded-3xl shadow-soft p-12 text-center">
-          <div className="text-6xl mb-3">📭</div>
+          <div className="text-6xl mb-3">ðŸ“­</div>
           <p className="text-gray-600">Aucune reservation</p>
         </div>
       ) : (
@@ -71,7 +71,7 @@ export default function AdminBookings() {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-start gap-4 flex-1">
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-coral-100 to-sun-100 flex items-center justify-center text-xl shrink-0">
-                    📅
+                    ðŸ“…
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -84,12 +84,12 @@ export default function AdminBookings() {
                     </div>
                     <div className="text-sm text-gray-600 space-y-0.5">
                       <div>
-                        👤 <strong>{b.parent?.user?.firstName} {b.parent?.user?.lastName}</strong>
-                        {' → '}
-                        👩‍🍼 <strong>{b.nanny?.user?.firstName} {b.nanny?.user?.lastName}</strong>
+                        ðŸ‘¤ <strong>{b.parent?.user?.firstName} {b.parent?.user?.lastName}</strong>
+                        {' â†’ '}
+                        ðŸ‘©âFCFAðŸ¼ <strong>{b.nanny?.user?.firstName} {b.nanny?.user?.lastName}</strong>
                       </div>
                       <div>
-                        📅 Du {new Date(b.startDate).toLocaleDateString('fr-FR')} au {new Date(b.endDate).toLocaleDateString('fr-FR')}
+                        ðŸ“… Du {new Date(b.startDate).toLocaleDateString('fr-FR')} au {new Date(b.endDate).toLocaleDateString('fr-FR')}
                       </div>
                     </div>
                   </div>

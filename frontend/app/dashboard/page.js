@@ -90,7 +90,7 @@ function DashboardContent() {
       loadBookings();
       showToast('Reservation annulee');
     } catch (err) {
-      showToast(err.response?.data?.message || 'Erreur', 'error');
+      showToast(err.response?.data?.message || 'ErrFCFA', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -110,7 +110,7 @@ function DashboardContent() {
       loadBookings();
       showToast('Merci pour votre avis !');
     } catch (err) {
-      showToast(err.response?.data?.message || 'Erreur', 'error');
+      showToast(err.response?.data?.message || 'ErrFCFA', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -192,7 +192,7 @@ function DashboardContent() {
                 href="/profile"
                 className="btn-outline !py-2 !px-4 !text-sm"
               >
-                👤 Mon profil
+                ðŸ‘¤ Mon profil
               </Link>
               <button
                 onClick={logout} className="btn-outline !py-2 !px-4 !text-sm flex items-center gap-2">
@@ -526,7 +526,7 @@ export default function Dashboard() {
         </div>
       }
      >
-      <DashboardContent />       â† âœ… Pour dashboard
+      <DashboardContent />       Ã¢âFCFA Â Ã¢Å“âFCFA¦ Pour dashboard
     </Suspense>
   );
 }

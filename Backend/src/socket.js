@@ -45,16 +45,21 @@ const initSocket = (httpServer) => {
             sender: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
           },
         });
+        
+        // Envoie au destinataire
         io.to('user:' + receiverId).emit('message:new', message);
+        
+        // Confirme à l'expéditeur
         socket.emit('message:sent', message);
 
-        // Persister + envoyer notification
+        // Persister + envoyer notification au destinataire
         await emitNotification({
           userId: receiverId,
           type: 'MESSAGE',
           title: 'Nouveau message',
           message: message.sender.firstName + ' vous a envoye un message',
-          link: '/messages',
+          // 👇 LIEN MIS À JOUR POUR OUVRIR DIRECTEMENT LA CONVERSATION 👇
+          link: '/messages?to=' + socket.userId,
           data: { messageId: message.id, senderId: socket.userId },
         });
       } catch (err) {

@@ -36,13 +36,13 @@ export default function NotificationCenter() {
   const panelRef = useRef(null);
   const buttonRef = useRef(null);
 
-  // Charger les notifications
+  // Charger les notifications initiales (si l'API existe)
   useEffect(() => {
     loadNotifications();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fermer au clic extÃ©rieur
+  // Fermer au clic extérieur
   useEffect(() => {
     if (!panelOpen) return;
 
@@ -66,19 +66,44 @@ export default function NotificationCenter() {
     const socket = getSocket();
     if (!socket) return;
 
+    // 1. Notifications classiques (paiement, réservation, etc.)
     const handleNotification = (notif) => {
       setNotifications((prev) => [notif, ...prev].slice(0, 50));
       setUnreadCount((c) => c + 1);
     };
 
+    // 2. Nouveaux messages (pour la cloche)
+    const handleNewMessage = (msg) => {
+      const messageNotif = {
+        id: msg.id,
+        type: 'MESSAGE',
+        title: `Nouveau message de ${msg.sender?.firstName || 'Quelqu\'un'}`,
+        message: msg.content,
+        link: `/messages?to=${msg.senderId}`,
+        isRead: false,
+        createdAt: new Date(),
+      };
+
+      setNotifications((prev) => [messageNotif, ...prev].slice(0, 50));
+      setUnreadCount((c) => c + 1);
+    };
+
     socket.on('notification', handleNotification);
-    return () => socket.off('notification', handleNotification);
+    socket.on('message:new', handleNewMessage);
+
+    return () => {
+      socket.off('notification', handleNotification);
+      socket.off('message:new', handleNewMessage);
+    };
   }, []);
 
   const loadNotifications = async () => {
     try {
       setLoading(true);
-      const { data } = await Promise.resolve({ data: [] });
+      // ⚠️ On simule un appel API vide pour éviter les erreurs 404
+      // Si tu crées la route /api/notifications plus tard, remplace ceci par :
+      // const { data } = await api.get('/notifications');
+      const data = { notifications: [], unreadCount: 0 };
       setNotifications(data.notifications || []);
       setUnreadCount(data.unreadCount || 0);
     } catch (err) {
@@ -89,15 +114,26 @@ export default function NotificationCenter() {
   };
 
   const handleNotificationClick = async (notif) => {
-    if (!notif.isRead && notif.id) {
-      try {
-        await api.patch('/notifications/' + notif.id + '/read');
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
-        );
-        setUnreadCount((c) => Math.max(0, c - 1));
-      } catch (err) {
-        console.error(err);
+    // Marquer comme lu localement
+    if (!notif.isRead) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
+      );
+      setUnreadCount((c) => Math.max(0, c - 1));
+
+      // Si c'est un vrai message, on essaie de marquer comme lu côté backend
+      if (notif.type === 'MESSAGE' && notif.id) {
+        try {
+          await api.patch('/messages/' + notif.id + '/read');
+        } catch (err) {
+          // Silencieux si la route n'existe pas encore
+        }
+      } else if (notif.id) {
+        try {
+          await api.patch('/notifications/' + notif.id + '/read');
+        } catch (err) {
+          // Silencieux
+        }
       }
     }
 
@@ -108,30 +144,24 @@ export default function NotificationCenter() {
   };
 
   const markAllRead = async () => {
-    try {
-      await api.patch('/notifications/read-all');
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setUnreadCount(0);
-    } catch (err) { console.error(err); }
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setUnreadCount(0);
+    // try { await api.patch('/notifications/read-all'); } catch (e) {}
   };
 
   const clearRead = async () => {
-    try {
-      await api.delete('/notifications/read');
-      setNotifications((prev) => prev.filter((n) => !n.isRead));
-    } catch (err) { console.error(err); }
+    setNotifications((prev) => prev.filter((n) => !n.isRead));
+    // try { await api.delete('/notifications/read'); } catch (e) {}
   };
 
   const deleteOne = async (e, id) => {
     e.stopPropagation();
-    try {
-      await api.delete('/notifications/' + id);
-      const removed = notifications.find((n) => n.id === id);
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-      if (removed && !removed.isRead) {
-        setUnreadCount((c) => Math.max(0, c - 1));
-      }
-    } catch (err) { console.error(err); }
+    const removed = notifications.find((n) => n.id === id);
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    if (removed && !removed.isRead) {
+      setUnreadCount((c) => Math.max(0, c - 1));
+    }
+    // try { await api.delete('/notifications/' + id); } catch (e) {}
   };
 
   const formatTime = (dateStr) => {
@@ -142,7 +172,7 @@ export default function NotificationCenter() {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return "A l'instant";
+    if (minutes < 1) return "À l'instant";
     if (minutes < 60) return `Il y a ${minutes} min`;
     if (hours < 24) return `Il y a ${hours}h`;
     if (days < 7) return `Il y a ${days}j`;
@@ -189,7 +219,7 @@ export default function NotificationCenter() {
             animation: 'fadeInDown 0.3s ease-out',
           }}
         >
-          {/* En-tete */}
+          {/* En-tête */}
           <div style={{ padding: '20px', borderBottom: '1px solid #f3f4f6', flexShrink: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: unreadCount > 0 || notifications.length > 0 ? '12px' : '0' }}>
               <h2 style={{ fontSize: '17px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px', color: '#111827' }}>

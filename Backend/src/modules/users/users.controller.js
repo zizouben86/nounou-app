@@ -15,6 +15,8 @@ const updateMe = async (req, res, next) => {
 };
 
 const addChild = async (req, res, next) => {
+  console.log("📥 Tentative d'ajout d'enfant pour l'utilisateur :", req.user.id);
+  console.log("📝 Données reçues :", req.body);
   try {
     const child = await service.addChild(req.user.id, req.body);
     res.status(201).json(child);
@@ -27,5 +29,11 @@ const deleteChild = async (req, res, next) => {
     res.json({ ok: true });
   } catch (err) { next(err); }
 };
+const getUserById = async (req, res, next) => {
+  try {
+    const user = await service.getUserById(req.params.id);
+    res.json(user);
+  } catch (err) { next(err); }
+};
 
-module.exports = { getMe, updateMe, addChild, deleteChild };
+module.exports = { getMe, updateMe, addChild, deleteChild, getUserById };
