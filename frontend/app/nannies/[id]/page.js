@@ -41,28 +41,33 @@ export default function NannyProfilePage() {
       });
   }, [id]);
 
-  const handleBooking = async (e) => {
-    e.preventDefault();
-    if (!user) return router.push('/login');
+ // APRÈS
+const handleBooking = async (e) => {
+  e.preventDefault();
+  if (!user) return router.push('/login');
 
-    setBookingLoading(true);
-    try {
-      const { data } = await api.post('/bookings', {
-        nannyId: nanny.id,
-        startDate: bookingData.startDate,
-        endDate: bookingData.endDate,
-        type: bookingData.type,
-        notes: bookingData.notes,
-      });
+  setBookingLoading(true);
+  try {
+    await api.post('/bookings', {
+      nannyId: nanny.id,
+      startDate: bookingData.startDate,
+      endDate: bookingData.endDate,
+      type: bookingData.type,
+      notes: bookingData.notes,
+    });
 
-      setBookingModal(false);
-      router.push('/bookings/' + data.id + '/pay');
-    } catch (err) {
-      alert(err.response?.data?.message || 'Erreur lors de la reservation');
-    } finally {
-      setBookingLoading(false);
-    }
-  };
+    setBookingModal(false);
+    alert('✅ Demande de réservation envoyée ! La nounou doit l accepter avant que vous puissiez payer.');
+    
+    // Redirection vers le dashboard parent pour voir le statut "En attente"
+    router.push('/dashboard'); 
+    
+  } catch (err) {
+    alert(err.response?.data?.message || 'Erreur lors de la reservation');
+  } finally {
+    setBookingLoading(false);
+  }
+};
 
   const handleContact = () => {
   if (!user) return router.push('/login');
@@ -455,7 +460,7 @@ export default function NannyProfilePage() {
                   disabled={bookingLoading}
                   className="btn-primary flex-1"
                 >
-                  {bookingLoading ? '⏳...' : '💳 Continuer vers paiement'}
+                  {bookingLoading ? '⏳...' : '📅 Réserver maintenant'}
                 </button>
               </div>
             </form>

@@ -1,6 +1,7 @@
 const prisma = require('../../config/prisma');
 const { sendEmail } = require('../emails/email.service');
 const templates = require('../emails/email.templates');
+const { notifyNewBooking, notifyBookingResponse } = require('../../socket');
 
 const COMMISSION_RATE = 0.15;
 
@@ -25,6 +26,7 @@ const create = async (parentUserId, data) => {
   const totalPrice = +(hours * nanny.hourlyRate).toFixed(2);
   const commission = +(totalPrice * COMMISSION_RATE).toFixed(2);
 
+  // 1. Création de la réservation
   const booking = await prisma.booking.create({
     data: {
       parentId: parent.id,
@@ -42,8 +44,13 @@ const create = async (parentUserId, data) => {
     },
   });
 
+  // 2. Envoi des notifications et emails (en arrière-plan)
   setImmediate(async () => {
     try {
+      // Notifier la nounou (Socket.io + Base de données)
+      await notifyNewBooking(booking.id);
+
+      // Email au parent (confirmation)
       const parentTpl = templates.bookingConfirmationParent({
         firstName: booking.parent.user.firstName,
         nannyName: booking.nanny.user.firstName + ' ' + booking.nanny.user.lastName,
@@ -60,6 +67,7 @@ const create = async (parentUserId, data) => {
         textContent: parentTpl.text,
       });
 
+      // Email à la nounou (notification)
       const nannyTpl = templates.bookingNotificationNanny({
         nannyFirstName: booking.nanny.user.firstName,
         parentName: booking.parent.user.firstName + ' ' + booking.parent.user.lastName,
@@ -76,7 +84,7 @@ const create = async (parentUserId, data) => {
         textContent: nannyTpl.text,
       });
     } catch (err) {
-      console.error('Erreur emails booking:', err.message);
+      console.error('Erreur notification/email booking:', err.message);
     }
   });
 
@@ -124,7 +132,25 @@ const updateStatus = async (bookingId, userId, role, status) => {
     err.status = 403;
     throw err;
   }
-  return prisma.booking.update({ where: { id: bookingId }, data: { status } });
+
+  // Mise à jour du statut
+  const updated = await prisma.booking.update({
+    where: { id: bookingId },
+    data: { status },
+  });
+
+  // Notification au parent si la nounou accepte ou refuse
+  if (status === 'CONFIRMED' || status === 'CANCELLED') {
+    setImmediate(async () => {
+      try {
+        await notifyBookingResponse(bookingId, status === 'CONFIRMED');
+      } catch (err) {
+        console.error('Erreur notification booking response:', err.message);
+      }
+    });
+  }
+
+  return updated;
 };
 
 module.exports = { create, listMine, updateStatus };

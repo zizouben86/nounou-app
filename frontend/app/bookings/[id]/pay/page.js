@@ -104,7 +104,7 @@ export default function PayBooking() {
   }, [step, id]);
 
   // ─────────────────────────────────────────────
-  // 4. Initier le paiement
+  // 4. Initier le paiement / reservation
   // ─────────────────────────────────────────────
   const handlePay = async (e) => {
     e.preventDefault();

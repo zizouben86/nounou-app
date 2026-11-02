@@ -35,7 +35,7 @@ function DashboardContent() {
     loadBookings();
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('booking') === 'created') {
-      showToast("Demande envoyee ! En attente d'acceptation par la nounou.", 'success');
+      showToast("Demande envoyée ! En attente d'acceptation par la nounou.", 'success');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
@@ -88,9 +88,9 @@ function DashboardContent() {
       await api.patch(`/bookings/${cancelModal.id}/status`, { status: 'CANCELLED' });
       setCancelModal(null);
       loadBookings();
-      showToast('Reservation annulee');
+      showToast('Réservation annulée');
     } catch (err) {
-      showToast(err.response?.data?.message || 'ErrFCFA', 'error');
+      showToast(err.response?.data?.message || 'Erreur', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -110,23 +110,23 @@ function DashboardContent() {
       loadBookings();
       showToast('Merci pour votre avis !');
     } catch (err) {
-      showToast(err.response?.data?.message || 'ErrFCFA', 'error');
+      showToast(err.response?.data?.message || 'Erreur', 'error');
     } finally {
       setActionLoading(false);
     }
   };
 
   const getStatusInfo = (b) => {
-    if (b.status === 'CANCELLED') return { label: 'Refusee', class: 'bg-gray-100 text-gray-600' };
-    if (b.status === 'COMPLETED') return { label: 'Terminee', class: 'bg-sky-100 text-sky-700' };
+    if (b.status === 'CANCELLED') return { label: 'Refusée', class: 'bg-gray-100 text-gray-600' };
+    if (b.status === 'COMPLETED') return { label: 'Terminée', class: 'bg-sky-100 text-sky-700' };
     if (b.status === 'PENDING') return { label: 'En attente de la nounou', class: 'bg-sun-100 text-sun-700' };
     if (b.status === 'CONFIRMED' && b.paymentStatus !== 'SUCCESS') {
-      return { label: 'Acceptee - a payer', class: 'bg-coral-100 text-coral-700' };
+      return { label: 'Acceptée - à payer', class: 'bg-coral-100 text-coral-700' };
     }
     if (b.status === 'CONFIRMED' && b.paymentStatus === 'SUCCESS') {
-      return { label: 'Payee', class: 'bg-mint-100 text-mint-700' };
+      return { label: 'Payée', class: 'bg-mint-100 text-mint-700' };
     }
-    if (b.paymentStatus === 'FAILED') return { label: 'Paiement echoue', class: 'bg-red-100 text-red-700' };
+    if (b.paymentStatus === 'FAILED') return { label: 'Paiement échoué', class: 'bg-red-100 text-red-700' };
     return { label: b.status, class: 'bg-gray-100 text-gray-600' };
   };
 
@@ -139,7 +139,7 @@ function DashboardContent() {
     const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
     if (days > 0) return `Dans ${days}j ${hours}h`;
     if (hours > 0) return `Dans ${hours}h`;
-    return 'Bientot';
+    return 'Bientôt';
   };
 
   const canPay = (b) => b.status === 'CONFIRMED' && b.paymentStatus !== 'SUCCESS';
@@ -183,21 +183,22 @@ function DashboardContent() {
                   <p className="text-gray-500">Bienvenue sur votre espace NounouHome</p>
                 </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <Link href="/nannies" className="btn-primary !py-2 !px-4 !text-sm flex items-center gap-2">
                   <Icon name="plus" size={16} />
-                  Nouvelle reservation
+                  Nouvelle réservation
                 </Link>
                 <Link
-                href="/profile"
-                className="btn-outline !py-2 !px-4 !text-sm"
-              >
-                ðŸ‘¤ Mon profil
-              </Link>
-              <button
-                onClick={logout} className="btn-outline !py-2 !px-4 !text-sm flex items-center gap-2">
+                  href="/profile"
+                  className="btn-outline !py-2 !px-4 !text-sm flex items-center gap-2"
+                >
+                  <Icon name="user" size={16} />
+                  Mon profil
+                </Link>
+                <button
+                  onClick={logout} className="btn-outline !py-2 !px-4 !text-sm flex items-center gap-2">
                   <Icon name="logout" size={16} />
-                  Deconnexion
+                  Déconnexion
                 </button>
               </div>
             </div>
@@ -205,10 +206,10 @@ function DashboardContent() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
-              { label: 'Reservations', value: stats.total, icon: 'calendar', color: 'coral' },
-              { label: 'Payees', value: stats.paid, icon: 'checkCircle', color: 'mint' },
+              { label: 'Réservations', value: stats.total, icon: 'calendar', color: 'coral' },
+              { label: 'Payées', value: stats.paid, icon: 'checkCircle', color: 'mint' },
               { label: 'En attente', value: stats.pending, icon: 'clock', color: 'sun' },
-              { label: 'Total depense', value: `${stats.spent.toFixed(0)} F`, icon: 'wallet', color: 'sky' },
+              { label: 'Total dépensé', value: `${stats.spent.toFixed(0)} F`, icon: 'wallet', color: 'sky' },
             ].map((s, i) => (
               <Reveal key={i} delay={i * 80}>
                 <div className="bg-white rounded-2xl shadow-soft p-5 hover:shadow-soft-lg transition-all duration-300 hover:-translate-y-1">
@@ -229,7 +230,7 @@ function DashboardContent() {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <h2 className="text-xl font-bold flex items-center gap-2">
                   <Icon name="calendar" size={22} />
-                  Mes reservations
+                  Mes réservations
                 </h2>
               </div>
 
@@ -240,10 +241,10 @@ function DashboardContent() {
                   </div>
                   <div className="flex-1">
                     <div className="font-bold text-coral-700 mb-1">
-                      Une nounou a accepte votre demande !
+                      Une nounou a accepté votre demande !
                     </div>
                     <p className="text-sm text-coral-600">
-                      Reglez le paiement Mobile Money pour confirmer definitivement la reservation.
+                      Réglez le paiement Mobile Money pour confirmer définitivement la réservation.
                     </p>
                   </div>
                 </div>
@@ -253,10 +254,10 @@ function DashboardContent() {
                 {[
                   { id: 'ALL', label: 'Toutes', count: stats.total },
                   { id: 'PENDING', label: 'En attente nounou', count: stats.pending },
-                  { id: 'TO_PAY', label: 'A payer' },
-                  { id: 'PAID', label: 'Payees', count: stats.paid },
-                  { id: 'COMPLETED', label: 'Terminees' },
-                  { id: 'CANCELLED', label: 'Refusees' },
+                  { id: 'TO_PAY', label: 'À payer' },
+                  { id: 'PAID', label: 'Payées', count: stats.paid },
+                  { id: 'COMPLETED', label: 'Terminées' },
+                  { id: 'CANCELLED', label: 'Refusées' },
                 ].map((f) => (
                   <button
                     key={f.id}
@@ -287,8 +288,8 @@ function DashboardContent() {
                   <Icon name="calendar" size={72} className="text-gray-300 mx-auto mb-4 animate-float" />
                   <p className="text-gray-500 mb-6">
                     {filter === 'ALL'
-                      ? 'Aucune reservation pour le moment.'
-                      : 'Aucune reservation dans cette categorie.'}
+                      ? 'Aucune réservation pour le moment.'
+                      : 'Aucune réservation dans cette catégorie.'}
                   </p>
                   {filter === 'ALL' && (
                     <Link href="/nannies" className="btn-mint flex items-center gap-2 inline-flex">
@@ -424,9 +425,9 @@ function DashboardContent() {
               <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4 text-red-500">
                 <Icon name="alert" size={40} strokeWidth={2.2} />
               </div>
-              <h2 className="text-2xl font-extrabold mb-2">Annuler cette reservation ?</h2>
+              <h2 className="text-2xl font-extrabold mb-2">Annuler cette réservation ?</h2>
               <p className="text-gray-600 text-sm">
-                La nounou sera notifiee immediatement.
+                La nounou sera notifiée immédiatement.
               </p>
             </div>
 
@@ -486,7 +487,7 @@ function DashboardContent() {
 
             <textarea
               rows="4"
-              placeholder="Partagez votre experience..."
+              placeholder="Partagez votre expérience..."
               value={reviewData.comment}
               onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
               className="input-modern resize-none mb-4"
@@ -514,6 +515,7 @@ function DashboardContent() {
     </>
   );
 }
+
 export default function Dashboard() {
   return (
     <Suspense
@@ -525,8 +527,8 @@ export default function Dashboard() {
           </div>
         </div>
       }
-     >
-      <DashboardContent />       Ã¢âFCFA Â Ã¢Å“âFCFA¦ Pour dashboard
+    >
+      <DashboardContent />
     </Suspense>
   );
 }

@@ -2,7 +2,7 @@
 import {
   // Navigation & UI
   Home, Search, MessageCircle, Bell, User, Menu, X, ChevronRight, ArrowRight,
-  LogOut, Settings, Plus, Filter, Sliders,
+  LogOut, Settings, Plus, Filter,
   
   // Actions
   Check, CheckCircle, XCircle, AlertCircle, Clock, Calendar, CalendarCheck,
@@ -30,7 +30,7 @@ const ICONS = {
   search: Search,
   message: MessageCircle,
   bell: Bell,
-  user: User,
+  user: User,             // ✅ Un seul 'user', avec le composant Lucide
   menu: Menu,
   close: X,
   chevronRight: ChevronRight,
@@ -44,7 +44,7 @@ const ICONS = {
   check: Check,
   checkCircle: CheckCircle,
   xCircle: XCircle,
-  alert: AlertCircle,
+  alert: AlertCircle,     // ✅ Un seul 'alert', avec le composant Lucide
   clock: Clock,
   calendar: Calendar,
   calendarCheck: CalendarCheck,
@@ -60,7 +60,7 @@ const ICONS = {
   upload: Upload,
   
   // Utilisateurs
-  baby: Baby,
+  baby: Baby,             // ✅ Un seul 'baby', avec le composant Lucide
   users: Users,
   heart: Heart,
   star: Star,

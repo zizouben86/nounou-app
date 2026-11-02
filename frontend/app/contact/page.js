@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import Navbar from '../../components/Navbar';
-import api from '../../lib/api';
 
 export default function ContactPage() {
   const [form, setForm] = useState({
@@ -46,9 +45,9 @@ export default function ContactPage() {
 
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             {[
-              { icon: '📞', title: 'Téléphone', value: '+237 6 XX XX XX XX', sub: 'Lun-Ven, 8h-18h' },
-              { icon: '📧', title: 'Email', value: 'contact@nounouhome.cm', sub: 'Réponse sous 24h' },
-              { icon: '📍', title: 'Adresse', value: 'Douala, Cameroun', sub: 'Akwa, Boulevard de la Liberté' },
+              { icon: '📞', title: 'Téléphone', value: '+237 654 91 38 92', sub: 'Lun-Ven, 8h-18h' },
+              { icon: '📧', title: 'Email', value: 'ben.yomo1986@gmail.com', sub: 'Réponse sous 24h' },
+              { icon: '📍', title: 'Adresse', value: 'Yaoundé, Cameroun', sub: 'Mimboman, Carrefour OPEP' },
             ].map((c, i) => (
               <div key={i} className="bg-white rounded-3xl shadow-soft p-6 text-center">
                 <div className="text-4xl mb-3">{c.icon}</div>
